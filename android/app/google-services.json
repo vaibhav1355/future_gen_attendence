@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "692408170342",
+    "project_id": "loginwith-96c7f",
+    "storage_bucket": "loginwith-96c7f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:692408170342:android:adc9c69ad68d9b1cfebaa7",
+        "android_client_info": {
+          "package_name": "com.example.futuregen_attendance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtmJBxiZ85TVJA14IgyMyfKMqC_uMQOEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
