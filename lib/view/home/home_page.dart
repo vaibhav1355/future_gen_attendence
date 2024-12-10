@@ -9,6 +9,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  final List<Map<String, dynamic>> data = [
+    {"strings": "Admin - General", "times": "00:00", "journals": ""},
+    {"strings": "Academic - General", "times": "10:15", "journals": ""},
+    {"strings": "Fundraising - General", "times": "11:30", "journals": ""},
+  ];
   DateTime selectedDate = DateTime.now();
   final DateTime currentdate = DateTime.now();
 
@@ -26,15 +32,35 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _selectTime(BuildContext context, int index) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: 0, minute: 00),
+      initialEntryMode: TimePickerEntryMode.dial,
+    );
+
+    if (picked != null) {
+      setState(() {
+        final newTime = DateTime(
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+          picked.hour,
+          picked.minute,
+        );
+
+        // Update the 'times' field for the specific item in the data list
+        data[index]['times'] = DateFormat('HH:mm').format(newTime);
+      });
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     String today = DateFormat('EEE, dd MMM yyyy').format(selectedDate);
 
-    final List<Map<String, dynamic>> data = [
-      {"strings": "Admin - General", "times": "00:00", "journals": ""},
-      {"strings": "Academic - General", "times": "10:15", "journals": ""},
-      {"strings": "Fundraising - General", "times": "11:30", "journals": ""},
-    ];
+
 
     return Scaffold(
       appBar: AppBar(
@@ -49,7 +75,7 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           Container(
-            height: 80,
+            height: MediaQuery.sizeOf(context).height*0.075,
             color:  Color(0xff323641),
             padding:  EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -95,7 +121,7 @@ class _HomePageState extends State<HomePage> {
                   return Card(
                     margin: EdgeInsets.zero,
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 12.0, top: 12.0, bottom: 12.0),
+                      padding: EdgeInsets.only(left: 12.0, top: 12.0, bottom: 12.0),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Image.asset(
@@ -114,14 +140,14 @@ class _HomePageState extends State<HomePage> {
                     Card(
                       margin: EdgeInsets.zero,
                       child: ListTile(
-                        contentPadding:  EdgeInsets.symmetric(
+                        contentPadding: EdgeInsets.symmetric(
                           horizontal: 24,
                           vertical: 16,
                         ),
                         leading: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.26,
+                          width: MediaQuery.of(context).size.width * 0.30,
                           child: Padding(
-                            padding:  EdgeInsets.only(left: 12.0),
+                            padding: EdgeInsets.only(left: 12.0),
                             child: Text(
                               item['strings'],
                               style: TextStyle(
@@ -134,30 +160,13 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-                        title: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Flexible(
-                                child: GestureDetector(
-                                  onTap: () async {
-                                    final TimeOfDay? picked = await showTimePicker(
-                                      context: context,
-                                      initialTime: TimeOfDay.fromDateTime(selectedDate),
-                                    );
-                                    if (picked != null) {
-                                      setState(() {
-                                        final newTime = DateTime(
-                                          selectedDate.year,
-                                          selectedDate.month,
-                                          selectedDate.day,
-                                          picked.hour,
-                                          picked.minute,
-                                        );
-                                        item['times'] = DateFormat('HH:mm').format(newTime);
-                                      });
-                                    }
-                                  },
+                        title: GestureDetector(
+                          onTap: () => _selectTime(context ,index),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Flexible(
                                   child: Text(
                                     item['times'],
                                     style: TextStyle(
@@ -167,27 +176,27 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(width: 10),
-                              Image.asset(
-                                'assets/images/caret_arrow_up.png',
-                                height: 20,
-                                width: 20,
-                              ),
-                            ],
+                                SizedBox(width: 10),
+                                Image.asset(
+                                  'assets/images/caret_arrow_up.png',
+                                  height: 20,
+                                  width: 20,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         trailing: MaterialButton(
                           onPressed: () {
-
+                            // Implement your logic here
                           },
-                          color:  Color(0xffefce21),
+                          color: Color(0xffefce21),
                           minWidth: 120,
-                          padding:  EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(32.0),
                           ),
-                          child:  Text(
+                          child: Text(
                             'Journal',
                             style: TextStyle(
                               fontSize: 16,
@@ -244,151 +253,159 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          Row(
-            children: [
-              MaterialButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    shape:  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                    ),
-                    builder: (BuildContext context) {
-                      return Wrap(
+          InkWell(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                shape:  RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (BuildContext context) {
+                  return Wrap(
+                    children: [
+                      Column(
                         children: [
-                          Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: MaterialButton(
-                                      onPressed: () {},
-                                      color: Color(0xff39ba53),
-                                      height: 60,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(12),
-                                          bottomLeft: Radius.circular(12),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'D-212.7',
-                                        style: TextStyle(fontSize: 20, color: Colors.white),
-                                      ),
+                          InkWell(
+                            onTap: (){
+                              Navigator.pop(context);
+                            }, // close the showModelBottomSheet
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: MediaQuery.of(context).size.width * 0.5,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xff39ba53),
+                                  ),
+                                  padding: EdgeInsets.all(12),
+                                  child: Center(
+                                    child: Text(
+                                      'D-212.7',
+                                      style: TextStyle(fontSize: 20, color: Colors.white),
                                     ),
                                   ),
-                                  Expanded(
-                                    child: MaterialButton(
-                                      onPressed: () {},
-                                      color: Color(0xffde3232),
-                                      height: 60,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.only(
-                                          topRight: Radius.circular(12),
-                                          bottomRight: Radius.circular(12),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'H-1701.58',
-                                        style: TextStyle(fontSize: 20, color: Colors.white),
-                                      ),
+                                ),
+                                Container(
+                                  width: MediaQuery.of(context).size.width * 0.5,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xffde3232),
+                                  ),
+                                  padding: EdgeInsets.all(12),
+                                  child: Center(
+                                    child: Text(
+                                      'H-1701.58',
+                                      style: TextStyle(fontSize: 20, color: Colors.white),
                                     ),
                                   ),
-                                ],
-                              ),
-                              Container(
-                                padding:  EdgeInsets.all(16.0),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    SizedBox(height: 16),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children:  [
-                                        Text(
-                                          'Total Hours:',
-                                          style: TextStyle(fontSize: 16),
-                                        ),
-                                        Text(
-                                          '212.7', // Replace with dynamic data if needed
-                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding:  EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children:  [
+                                    Text(
+                                      'Total Hours:',
+                                      style: TextStyle(fontSize: 16),
                                     ),
-                                    SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children:  [
-                                        Text(
-                                          'Left Hours:',
-                                          style: TextStyle(fontSize: 16),
-                                        ),
-                                        Text(
-                                          '50', // Replace with dynamic data if needed
-                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
+                                    Text(
+                                      '212.7',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                     ),
-                                     SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children:  [
-                                        Text(
-                                          'Total Days:',
-                                          style: TextStyle(fontSize: 16),
-                                        ),
-                                        Text(
-                                          '30', // Replace with dynamic data if needed
-                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children:  [
-                                        Text(
-                                          'Left Days:',
-                                          style: TextStyle(fontSize: 16),
-                                        ),
-                                        Text(
-                                          '10',
-                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 16),
                                   ],
                                 ),
-                              )
-                            ],
+                                SizedBox(height: 14),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children:  [
+                                    Text(
+                                      'Left Hours:',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    Text(
+                                      '50', // Replace with dynamic data if needed
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 14),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children:  [
+                                    Text(
+                                      'Total Days:',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    Text(
+                                      '30', // Replace with dynamic data if needed
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 14),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children:  [
+                                    Text(
+                                      'Left Days:',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    Text(
+                                      '10',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 16),
+                              ],
+                            ),
                           )
                         ],
-                      );
-                    },
+                      )
+                    ],
                   );
                 },
-                color:  Color(0xff39ba53),
-                minWidth: MediaQuery.of(context).size.width * 0.5,
-                height: 60,
-                padding:  EdgeInsets.all(12),
-                child: Text(
-                  'D-212.7',
-                  style: TextStyle(fontSize: 20, color: Colors.white),
+              );
+            } ,
+            child: Row(
+              children: [
+                Container(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Color(0xff39ba53),
+                  ),
+                  padding: EdgeInsets.all(12),
+                  child: Center(
+                    child: Text(
+                      'D-212.7',
+                      style: TextStyle(fontSize: 20, color: Colors.white),
+                    ),
+                  ),
                 ),
-              ),
-              MaterialButton(
-                onPressed: () {  },
-                color: Color(0xffde3232),
-                minWidth: MediaQuery.of(context).size.width * 0.5,
-                height: 60,
-                padding: EdgeInsets.all(12),
-                child: Text(
-                  'H-1701.58',
-                  style: TextStyle(fontSize: 20, color: Colors.white),
+                Container(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Color(0xffde3232),
+                  ),
+                  padding: EdgeInsets.all(12),
+                  child: Center(
+                    child: Text(
+                      'H-1701.58',
+                      style: TextStyle(fontSize: 20, color: Colors.white),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -396,3 +413,4 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// 0221
