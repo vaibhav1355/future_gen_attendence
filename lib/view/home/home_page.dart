@@ -9,7 +9,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   DateTime selectedDate = DateTime.now();
   final DateTime currentdate = DateTime.now();
 
@@ -43,7 +42,7 @@ class _HomePageState extends State<HomePage> {
           picked.hour,
           picked.minute,
         );
-        data[index]['times'] = DateFormat('HH:mm').format(newTime);
+        updatedData['categorylist'][index]['time'] = DateFormat('HH:mm').format(newTime);
       });
     }
   }
@@ -63,11 +62,27 @@ class _HomePageState extends State<HomePage> {
     'Customer Service-General',
   ];
 
-  List<String> selectedCategories = [
-    'Admin-General',
-    'Academic-General',
-    'Fundraising-General'
-  ];
+  final Map<String, dynamic> updatedData = {
+    'selectedDate': '07-12-2024',
+    'operationStatus': 'Locked',
+    'categorylist': [
+      {
+        'category': 'Admin-General',
+        'time': '00:00',
+        'journals': ' ',
+      },
+      {
+        'category': 'Academic-General',
+        'time': '00:00',
+        'journals': ' ',
+      },
+      {
+        'category': 'Fundraising-General',
+        'time': '00:00',
+        'journals': ' ',
+      },
+    ],
+  };
 
   void _showCategoryBottomSheet(BuildContext context) {
     showModalBottomSheet(
@@ -79,9 +94,8 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(4.0),
               child: Column(
                 children: [
-                  // Fixed Top Buttons
                   Padding(
-                    padding: const EdgeInsets.only(left: 20, right: 20, top: 30, bottom: 10),
+                    padding: EdgeInsets.only(left: 20, right: 20, top: 30, bottom: 10),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -89,24 +103,46 @@ class _HomePageState extends State<HomePage> {
                           onTap: () {
                             Navigator.pop(context);
                           },
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: Color(0xff6C60FF),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: Color(0xff6C60FF),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
                         ),
                         InkWell(
                           onTap: () {
-                            Navigator.pop(context, selectedCategories);
+                            setState(() {
+                              for (int i = 0; i < categories.length; i++) {
+                                bool isAlreadySelected = updatedData['categorylist'].any(
+                                      (item) => item["category"] == categories[i],
+                                );
+                                if (isAlreadySelected) continue;
+                                if (categories[i].startsWith('Admin') &&
+                                    updatedData['categorylist'].every((item) => item["category"] != categories[i])) {
+                                  updatedData['categorylist'].add({
+                                    "category": categories[i],
+                                    "time": "00:00",
+                                    "journals": "",
+                                  });
+                                }
+                              }
+                            });
+                            Navigator.pop(context);
                           },
-                          child: Text(
-                            'Add Category',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Add Category',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
                         ),
@@ -114,24 +150,32 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   Divider(thickness: 1, color: Color(0xffE7E7E7)),
-
                   // Scrollable Category List
                   Expanded(
                     child: ListView.builder(
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
+                        bool isAlreadySelected = updatedData['categorylist'].any(
+                              (item) => item["category"] == categories[index],
+                        );
                         return Column(
                           children: [
                             CheckboxListTile(
                               title: Text(categories[index]),
-                              value: selectedCategories.contains(categories[index]),
+                              value: isAlreadySelected,
                               onChanged: (bool? value) {
                                 setState(() {
-                                  if (value != null && value) {
-                                    selectedCategories.add(categories[index]);
+                                  if (value == true && !isAlreadySelected) {
+                                    updatedData['categorylist'].add({
+                                      "category": categories[index],
+                                      "time": "00:00",
+                                      "journals": "",
+                                    });
                                   } else {
-                                    // selectedCategories.remove(categories[index]);
+                                    //updatedData['categorylist'].removeWhere((item) => item["category"] == categories[index]);
                                   }
+                                  print(updatedData);
+                                  print('');
                                 });
                               },
                               controlAffinity: ListTileControlAffinity.leading,
@@ -151,37 +195,19 @@ class _HomePageState extends State<HomePage> {
           },
         );
       },
-    ).then((updatedCategories) {
-      if (updatedCategories != null) {
-        setState(() {
-          for (var category in updatedCategories) {
-            if (!data.any((item) => item["strings"] == category)) {
-              data.add({
-                "strings": category,
-                "times": "00:00",
-                "journals": "",
-              });
-            }
-          }
-        });
-      }
+    ).then((_) {
+      setState(() {});
     });
   }
-
-  final List<Map<String, dynamic>> data = [
-    {"strings": "Admin-General", "times": "00:00", "journals": ""},
-    {"strings": "Academic-General", "times": "10:15", "journals": ""},
-    {"strings": "Fundraising-General", "times": "11:30", "journals": ""},
-  ];
 
   @override
   Widget build(BuildContext context) {
     String today = DateFormat('EEE, dd MMM yyyy').format(selectedDate);
     return Scaffold(
       appBar: AppBar(
-        leading:  Icon(Icons.menu, size: 26, color: Colors.white),
+        leading: Icon(Icons.menu, size: 26, color: Colors.white),
         centerTitle: true,
-        title:  Text(
+        title: Text(
           'Home',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),
@@ -190,17 +216,17 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           Container(
-            height: MediaQuery.sizeOf(context).height*0.075,
-            color:  Color(0xff323641),
-            padding:  EdgeInsets.symmetric(horizontal: 20),
+            height: MediaQuery.sizeOf(context).height * 0.075,
+            color: Color(0xff323641),
+            padding: EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon:  Icon(Icons.arrow_back_ios, color: Colors.white),
+                  icon: Icon(Icons.arrow_back_ios, color: Colors.white),
                   onPressed: () {
                     setState(() {
-                      selectedDate = selectedDate.subtract( Duration(days: 1));
+                      selectedDate = selectedDate.subtract(Duration(days: 1));
                     });
                   },
                 ),
@@ -219,7 +245,7 @@ class _HomePageState extends State<HomePage> {
                   icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
                   onPressed: () {
                     setState(() {
-                      if (selectedDate.add( Duration(days: 1)).isBefore(DateTime(currentdate.year, currentdate.month, currentdate.day + 1))) {
+                      if (selectedDate.add(Duration(days: 1)).isBefore(DateTime(currentdate.year, currentdate.month, currentdate.day + 1))) {
                         selectedDate = selectedDate.add(const Duration(days: 1));
                       }
                     });
@@ -230,9 +256,9 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: data.length + 1,
+              itemCount: updatedData['categorylist'].length + 1,
               itemBuilder: (context, index) {
-                if (index == data.length) {
+                if (index == updatedData['categorylist'].length) {
                   return Column(
                     children: [
                       Padding(
@@ -241,7 +267,8 @@ class _HomePageState extends State<HomePage> {
                           alignment: Alignment.centerLeft,
                           child: InkWell(
                             onTap: () {
-                              _showCategoryBottomSheet(context);
+                              if (!_islocked)
+                                _showCategoryBottomSheet(context);
                             },
                             child: Image.asset(
                               'assets/images/add_img.png',
@@ -260,7 +287,7 @@ class _HomePageState extends State<HomePage> {
                     ],
                   );
                 }
-                final item = data[index];
+                final item = updatedData['categorylist'][index];
                 return Column(
                   children: [
                     ListTile(
@@ -270,7 +297,7 @@ class _HomePageState extends State<HomePage> {
                         child: SizedBox(
                           width: MediaQuery.sizeOf(context).width * 0.3,
                           child: Text(
-                            item['strings'],
+                            item['category'],
                             style: const TextStyle(
                               color: Colors.grey,
                               fontSize: 18,
@@ -288,7 +315,7 @@ class _HomePageState extends State<HomePage> {
                             SizedBox(width: 10, height: 50),
                             Flexible(
                               child: Text(
-                                item['times'],
+                                item['time'],
                                 style: const TextStyle(
                                   color: Colors.grey,
                                   fontSize: 20,
@@ -561,5 +588,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-// 0221
