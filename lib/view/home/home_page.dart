@@ -9,6 +9,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
   DateTime selectedDate = DateTime.now();
   final DateTime currentdate = DateTime.now();
 
@@ -42,7 +43,10 @@ class _HomePageState extends State<HomePage> {
           picked.hour,
           picked.minute,
         );
-        updatedData['categorylist'][index]['time'] = DateFormat('HH:mm').format(newTime);
+
+        // Format the time and update the respective index in the category list
+        updatedData[0]['categorylist'][index]['time'] =
+            DateFormat('HH:mm').format(newTime);
       });
     }
   }
@@ -62,27 +66,25 @@ class _HomePageState extends State<HomePage> {
     'Customer Service-General',
   ];
 
-  final Map<String, dynamic> updatedData = {
-    'selectedDate': '07-12-2024',
-    'operationStatus': 'Locked',
-    'categorylist': [
-      {
-        'category': 'Admin-General',
-        'time': '00:00',
-        'journals': ' ',
-      },
-      {
-        'category': 'Academic-General',
-        'time': '00:00',
-        'journals': ' ',
-      },
-      {
-        'category': 'Fundraising-General',
-        'time': '00:00',
-        'journals': ' ',
-      },
-    ],
-  };
+  final List<Map<String, dynamic>> updatedData = [
+    {
+      'selectedDate': '11-12-2024',
+      'operationStatus': 'Unlocked',
+      'categorylist': [
+        {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
+        {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
+        {'category': 'Fundraising-General', 'time': '7:00', 'journals': ''},
+        {'category': 'Event Management-General', 'time': '10:00', 'journals': ''},
+        {'category': 'Customer Service-General', 'time': '6:00', 'journals': ''},
+      ],
+    },
+  ];
+
+  List<Map<String, String>> defaultCategory = [
+      {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
+      {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
+      {'category': 'Fundraising-General', 'time': '7:00', 'journals': ''},
+  ];
 
   void _showCategoryBottomSheet(BuildContext context) {
     showModalBottomSheet(
@@ -91,7 +93,7 @@ class _HomePageState extends State<HomePage> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Padding(
-              padding: const EdgeInsets.all(4.0),
+              padding: EdgeInsets.all(4.0),
               child: Column(
                 children: [
                   Padding(
@@ -104,7 +106,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.pop(context);
                           },
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: EdgeInsets.all(8.0),
                             child: Text(
                               'Cancel',
                               style: TextStyle(
@@ -119,16 +121,24 @@ class _HomePageState extends State<HomePage> {
                           onTap: () {
                             setState(() {
                               for (int i = 0; i < categories.length; i++) {
-                                bool isAlreadySelected = updatedData['categorylist'].any(
-                                      (item) => item["category"] == categories[i],
-                                );
+                                bool isAlreadySelected = updatedData
+                                    .any((item) =>
+                                    item['categorylist']
+                                        .any((subItem) =>
+                                    subItem["category"] ==
+                                        categories[i]));
                                 if (isAlreadySelected) continue;
                                 if (categories[i].startsWith('Admin') &&
-                                    updatedData['categorylist'].every((item) => item["category"] != categories[i])) {
-                                  updatedData['categorylist'].add({
-                                    "category": categories[i],
-                                    "time": "00:00",
-                                    "journals": "",
+                                    updatedData.every(
+                                            (item) => item['categorylist']
+                                            .every(
+                                                (subItem) =>
+                                            subItem["category"] !=
+                                                categories[i]))) {
+                                  updatedData[0]['categorylist'].add({
+                                    'category': categories[i],
+                                    'time': '00:00',
+                                    'journals': '',
                                   });
                                 }
                               }
@@ -150,14 +160,12 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   Divider(thickness: 1, color: Color(0xffE7E7E7)),
-                  // Scrollable Category List
                   Expanded(
                     child: ListView.builder(
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
-                        bool isAlreadySelected = updatedData['categorylist'].any(
-                              (item) => item["category"] == categories[index],
-                        );
+                        bool isAlreadySelected = updatedData[0]['categorylist']
+                            .any((item) => item['category'] == categories[index]);
                         return Column(
                           children: [
                             CheckboxListTile(
@@ -166,16 +174,21 @@ class _HomePageState extends State<HomePage> {
                               onChanged: (bool? value) {
                                 setState(() {
                                   if (value == true && !isAlreadySelected) {
-                                    updatedData['categorylist'].add({
-                                      "category": categories[index],
-                                      "time": "00:00",
-                                      "journals": "",
+                                    updatedData[0]['categorylist'].add({
+                                      'category': categories[index],
+                                      'time': '00:00',
+                                      'journals': '',
                                     });
-                                  } else {
-                                    //updatedData['categorylist'].removeWhere((item) => item["category"] == categories[index]);
                                   }
-                                  print(updatedData);
-                                  print('');
+                                  else{
+
+                                  }
+                                  // else if (value == false &&
+                                  //     isAlreadySelected) {
+                                  //   updatedData[0]['categorylist']
+                                  //       .removeWhere((item) =>
+                                  //   item['category'] == categories[index]);
+                                  // }
                                 });
                               },
                               controlAffinity: ListTileControlAffinity.leading,
@@ -216,22 +229,43 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           Container(
-            height: MediaQuery.sizeOf(context).height * 0.075,
+            height: MediaQuery.of(context).size.height * 0.075,
             color: Color(0xff323641),
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-                  onPressed: () {
-                    setState(() {
-                      selectedDate = selectedDate.subtract(Duration(days: 1));
-                    });
-                  },
+                    icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                    onPressed: () {
+                      setState(() {
+                        selectedDate = selectedDate.subtract(Duration(days: 1));
+                        if (!updatedData.any((item) => item['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDate))) {
+                          updatedData.add({
+                            'selectedDate': DateFormat('dd-MM-yyyy').format(selectedDate),
+                            'operationStatus': 'Unlocked',
+                            'categorylist': List.from(defaultCategory),
+                          });
+                        }
+                        print('hehe: $updatedData');
+                      });
+                    },
                 ),
                 InkWell(
-                  onTap: () => _selectDate(context),
+                  onTap: () {
+                    _selectDate(context).then((_) {
+                      if (!updatedData.any((item) => item['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDate))) {
+                        setState(() {
+                          updatedData.add({
+                            'selectedDate': DateFormat('dd-MM-yyyy').format(selectedDate),
+                            'operationStatus': 'Unlocked',
+                            'categorylist': List.from(defaultCategory),
+                          });
+                        });
+                        print(updatedData);
+                      }
+                    });
+                  },
                   child: Text(
                     today,
                     style: TextStyle(
@@ -246,7 +280,17 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () {
                     setState(() {
                       if (selectedDate.add(Duration(days: 1)).isBefore(DateTime(currentdate.year, currentdate.month, currentdate.day + 1))) {
-                        selectedDate = selectedDate.add(const Duration(days: 1));
+                        selectedDate = selectedDate.add( Duration(days: 1));
+                        if (!updatedData.any((item) => item['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDate))) {
+                          setState(() {
+                            updatedData.add({
+                              'selectedDate': DateFormat('dd-MM-yyyy').format(selectedDate),
+                              'operationStatus': 'Unlocked',
+                              'categorylist': List.from(defaultCategory),
+                            });
+                          });
+                          print(updatedData);
+                        }
                       }
                     });
                   },
@@ -256,9 +300,9 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: updatedData['categorylist'].length + 1,
+              itemCount: updatedData[0]['categorylist'].length + 1,
               itemBuilder: (context, index) {
-                if (index == updatedData['categorylist'].length) {
+                if (index == updatedData[0]['categorylist'].length) {
                   return Column(
                     children: [
                       Padding(
@@ -267,8 +311,7 @@ class _HomePageState extends State<HomePage> {
                           alignment: Alignment.centerLeft,
                           child: InkWell(
                             onTap: () {
-                              if (!_islocked)
-                                _showCategoryBottomSheet(context);
+                              if (!_islocked) _showCategoryBottomSheet(context);
                             },
                             child: Image.asset(
                               'assets/images/add_img.png',
@@ -287,7 +330,7 @@ class _HomePageState extends State<HomePage> {
                     ],
                   );
                 }
-                final item = updatedData['categorylist'][index];
+                final item = updatedData[0]['categorylist'][index];
                 return Column(
                   children: [
                     ListTile(
@@ -295,10 +338,10 @@ class _HomePageState extends State<HomePage> {
                       leading: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 6.0),
                         child: SizedBox(
-                          width: MediaQuery.sizeOf(context).width * 0.3,
+                          width: MediaQuery.of(context).size.width * 0.3,
                           child: Text(
                             item['category'],
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.grey,
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
