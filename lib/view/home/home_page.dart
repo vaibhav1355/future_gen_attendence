@@ -10,6 +10,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
+  bool _islocked = false;
+
   DateTime selectedDate = DateTime.now();
   final DateTime currentdate = DateTime.now();
 
@@ -33,11 +35,11 @@ class _HomePageState extends State<HomePage> {
     },
   ];
 
-  List<Map<String, String>> defaultCategory = [
-    {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
-    {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
-    {'category': 'Fundraising-General', 'time': '7:00', 'journals': ''},
-  ];
+  // List<Map<String, String>> defaultCategory = [
+  //   {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
+  //   {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
+  //   {'category': 'Fundraising-General', 'time': '7:00', 'journals': ''},
+  // ];
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -81,8 +83,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  bool _islocked = false;
-
   final List<String> categories = [
     'Admin-General',
     'Academic-General',
@@ -97,9 +97,10 @@ class _HomePageState extends State<HomePage> {
   ];
 
   Future<void> _selectTime(BuildContext context, int index) async {
+
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay(hour: 0, minute: 00),
+      initialTime: TimeOfDay(hour: 00, minute: 00),
       initialEntryMode: TimePickerEntryMode.dial,
     );
 
@@ -140,20 +141,17 @@ class _HomePageState extends State<HomePage> {
             };
           },
         );
-
         dateEntry['categorylist'][index]['time'] = formattedTime;
       });
     }
   }
 
   void _showCategoryBottomSheet(BuildContext context) {
-    // Track checkbox states using a map to keep track of each category's selection state
+
     Map<String, bool> checkboxStates = {};
 
-    // Fetch the selected date data
     var selectedDateData = _getSelectedDateData();
 
-    // Initialize checkbox states to true for categories that are already present in the selected date's categorylist
     selectedDateData['categorylist'].forEach((item) {
       checkboxStates[item['category']] = true;
     });
@@ -266,7 +264,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     _ensureDateExists();
     var selectedDateData = _getSelectedDateData();
-    String today = DateFormat('EEE, dd MMM yyyy').format(selectedDate);
+
     return Scaffold(
       appBar: AppBar(
         leading: Icon(Icons.menu, size: 26, color: Colors.white),
@@ -376,14 +374,18 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       title: InkWell(
-                        onTap: () => _selectTime(context, index),
+                        onTap: () =>
+                            {
+                              if(!_islocked)
+                                _selectTime(context, index)
+                            },
                         child: Row(
                           children: [
                             SizedBox(width: 10, height: 50),
                             Flexible(
                               child: Text(
                                 item['time'],
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.grey,
                                   fontSize: 20,
                                   fontWeight: FontWeight.w500,
@@ -435,7 +437,7 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (!_islocked) // Show Save and Lock buttons only if not locked
+                if (!_islocked)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -475,7 +477,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                if (_islocked) // Show the Locked container only if locked
+                if (_islocked)
                   Container(
                     width: MediaQuery.sizeOf(context).width * 0.8,
                     height: 45,
@@ -483,7 +485,7 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'Locked',
                         style: TextStyle(
