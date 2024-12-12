@@ -109,13 +109,43 @@ class _HomePageState extends State<HomePage> {
           picked.minute,
         );
 
-        updatedData[0]['categorylist'][index]['time'] =
-            DateFormat('HH:mm').format(newTime);
+        String formattedTime = DateFormat('HH:mm').format(newTime);
+
+        String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
+
+        var dateEntry = updatedData.firstWhere(
+              (item) => item['selectedDate'] == formattedDate,
+          orElse: () {
+            updatedData.add({
+              'selectedDate': formattedDate,
+              'operationStatus': 'Unlocked',
+              'categorylist': List.from(defaultCategory),
+            });
+            return {
+              'selectedDate': formattedDate,
+              'operationStatus': 'Unlocked',
+              'categorylist': List.from(defaultCategory),
+            };
+          },
+        );
+
+        dateEntry['categorylist'][index]['time'] = formattedTime;
       });
     }
   }
 
   void _showCategoryBottomSheet(BuildContext context) {
+    // Track checkbox states using a map to keep track of each category's selection state
+    Map<String, bool> checkboxStates = {};
+
+    // Fetch the selected date data
+    var selectedDateData = _getSelectedDateData();
+
+    // Initialize checkbox states to true for categories that are already present in the selected date's categorylist
+    selectedDateData['categorylist'].forEach((item) {
+      checkboxStates[item['category']] = true;
+    });
+
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -149,28 +179,20 @@ class _HomePageState extends State<HomePage> {
                         InkWell(
                           onTap: () {
                             setState(() {
-                              for (int i = 0; i < categories.length; i++) {
-                                bool isAlreadySelected = updatedData
-                                    .any((item) =>
-                                    item['categorylist']
-                                        .any((subItem) =>
-                                    subItem["category"] ==
-                                        categories[i]));
-                                if (isAlreadySelected) continue;
-                                if (categories[i].startsWith('Admin') &&
-                                    updatedData.every(
-                                            (item) => item['categorylist']
-                                            .every(
-                                                (subItem) =>
-                                            subItem["category"] !=
-                                                categories[i]))) {
-                                  updatedData[0]['categorylist'].add({
-                                    'category': categories[i],
-                                    'time': '00:00',
-                                    'journals': '',
-                                  });
+                              categories.forEach((category) {
+                                if (checkboxStates[category] == true) {
+                                  bool isAlreadySelected = selectedDateData['categorylist']
+                                      .any((item) => item['category'] == category);
+
+                                  if (!isAlreadySelected) {
+                                    selectedDateData['categorylist'].add({
+                                      'category': category,
+                                      'time': '00:00',
+                                      'journals': '',
+                                    });
+                                  }
                                 }
-                              }
+                              });
                             });
                             Navigator.pop(context);
                           },
@@ -193,31 +215,17 @@ class _HomePageState extends State<HomePage> {
                     child: ListView.builder(
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
-                        bool isAlreadySelected = updatedData[0]['categorylist']
-                            .any((item) => item['category'] == categories[index]);
+                        String category = categories[index];
+                        bool isChecked = checkboxStates[category] ?? false;
+
                         return Column(
                           children: [
                             CheckboxListTile(
-                              title: Text(categories[index]),
-                              value: isAlreadySelected,
+                              title: Text(category),
+                              value: isChecked,
                               onChanged: (bool? value) {
                                 setState(() {
-                                  if (value == true && !isAlreadySelected) {
-                                    updatedData[0]['categorylist'].add({
-                                      'category': categories[index],
-                                      'time': '00:00',
-                                      'journals': '',
-                                    });
-                                  }
-                                  else{
-
-                                  }
-                                  // else if (value == false &&
-                                  //     isAlreadySelected) {
-                                  //   updatedData[0]['categorylist']
-                                  //       .removeWhere((item) =>
-                                  //   item['category'] == categories[index]);
-                                  // }
+                                  checkboxStates[category] = value ?? false;
                                 });
                               },
                               controlAffinity: ListTileControlAffinity.leading,
@@ -267,14 +275,14 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                    icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-                    onPressed: () {
-                      setState(() {
-                        selectedDate = selectedDate.subtract(Duration(days: 1));
-                        _ensureDateExists();
-                        print('hehe: $updatedData');
-                      });
-                    },
+                  icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                  onPressed: () {
+                    setState(() {
+                      selectedDate = selectedDate.subtract(Duration(days: 1));
+                      _ensureDateExists();
+                      print('hehe: $updatedData');
+                    });
+                  },
                 ),
                 InkWell(
                   onTap: () => _selectDate(context),
@@ -635,5 +643,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
 
