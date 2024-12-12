@@ -13,6 +13,32 @@ class _HomePageState extends State<HomePage> {
   DateTime selectedDate = DateTime.now();
   final DateTime currentdate = DateTime.now();
 
+  final List<Map<String, dynamic>> updatedData = [
+    {
+      'selectedDate': '12-12-2024',
+      'operationStatus': 'Unlocked',
+      'categorylist': [
+        {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
+        {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
+        {'category': 'Customer Service-General', 'time': '6:00', 'journals': ''},
+      ],
+    },
+    {
+      'selectedDate': '11-12-2024',
+      'operationStatus': 'Unlocked',
+      'categorylist': [
+        {'category': 'Admin-General', 'time': '4:00', 'journals': ''},
+        {'category': 'Academic-General', 'time': '12:00', 'journals': ''},
+      ],
+    },
+  ];
+
+  List<Map<String, String>> defaultCategory = [
+    {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
+    {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
+    {'category': 'Fundraising-General', 'time': '7:00', 'journals': ''},
+  ];
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -23,9 +49,48 @@ class _HomePageState extends State<HomePage> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
+        _ensureDateExists();
       });
     }
   }
+
+  void _ensureDateExists() {
+    String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
+    if (!updatedData.any((item) => item['selectedDate'] == formattedDate)) {
+      updatedData.add({
+        'selectedDate': formattedDate,
+        'operationStatus': 'Unlocked',
+        'categorylist': List.from(defaultCategory),
+      });
+    }
+  }
+
+  Map<String, dynamic> _getSelectedDateData() {
+    String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
+    return updatedData.firstWhere(
+          (item) => item['selectedDate'] == formattedDate,
+      orElse: () => {
+        'selectedDate': formattedDate,
+        'operationStatus': 'Unlocked',
+        'categorylist': [],
+      },
+    );
+  }
+
+  bool _islocked = false;
+
+  final List<String> categories = [
+    'Admin-General',
+    'Academic-General',
+    'Fundraising-General',
+    'Marketing-General',
+    'Operations-General',
+    'Finance-General',
+    'HR-General',
+    'Research-General',
+    'Event Management-General',
+    'Customer Service-General',
+  ];
 
   Future<void> _selectTime(BuildContext context, int index) async {
     final TimeOfDay? picked = await showTimePicker(
@@ -44,47 +109,11 @@ class _HomePageState extends State<HomePage> {
           picked.minute,
         );
 
-        // Format the time and update the respective index in the category list
         updatedData[0]['categorylist'][index]['time'] =
             DateFormat('HH:mm').format(newTime);
       });
     }
   }
-
-  bool _islocked = false;
-
-  final List<String> categories = [
-    'Admin-General',
-    'Academic-General',
-    'Fundraising-General',
-    'Marketing-General',
-    'Operations-General',
-    'Finance-General',
-    'HR-General',
-    'Research-General',
-    'Event Management-General',
-    'Customer Service-General',
-  ];
-
-  final List<Map<String, dynamic>> updatedData = [
-    {
-      'selectedDate': '11-12-2024',
-      'operationStatus': 'Unlocked',
-      'categorylist': [
-        {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
-        {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
-        {'category': 'Fundraising-General', 'time': '7:00', 'journals': ''},
-        {'category': 'Event Management-General', 'time': '10:00', 'journals': ''},
-        {'category': 'Customer Service-General', 'time': '6:00', 'journals': ''},
-      ],
-    },
-  ];
-
-  List<Map<String, String>> defaultCategory = [
-      {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
-      {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
-      {'category': 'Fundraising-General', 'time': '7:00', 'journals': ''},
-  ];
 
   void _showCategoryBottomSheet(BuildContext context) {
     showModalBottomSheet(
@@ -215,6 +244,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    _ensureDateExists();
+    var selectedDateData = _getSelectedDateData();
     String today = DateFormat('EEE, dd MMM yyyy').format(selectedDate);
     return Scaffold(
       appBar: AppBar(
@@ -240,34 +271,15 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () {
                       setState(() {
                         selectedDate = selectedDate.subtract(Duration(days: 1));
-                        if (!updatedData.any((item) => item['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDate))) {
-                          updatedData.add({
-                            'selectedDate': DateFormat('dd-MM-yyyy').format(selectedDate),
-                            'operationStatus': 'Unlocked',
-                            'categorylist': List.from(defaultCategory),
-                          });
-                        }
+                        _ensureDateExists();
                         print('hehe: $updatedData');
                       });
                     },
                 ),
                 InkWell(
-                  onTap: () {
-                    _selectDate(context).then((_) {
-                      if (!updatedData.any((item) => item['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDate))) {
-                        setState(() {
-                          updatedData.add({
-                            'selectedDate': DateFormat('dd-MM-yyyy').format(selectedDate),
-                            'operationStatus': 'Unlocked',
-                            'categorylist': List.from(defaultCategory),
-                          });
-                        });
-                        print(updatedData);
-                      }
-                    });
-                  },
+                  onTap: () => _selectDate(context),
                   child: Text(
-                    today,
+                    DateFormat('EEE, dd MMM yyyy').format(selectedDate),
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -279,18 +291,10 @@ class _HomePageState extends State<HomePage> {
                   icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
                   onPressed: () {
                     setState(() {
-                      if (selectedDate.add(Duration(days: 1)).isBefore(DateTime(currentdate.year, currentdate.month, currentdate.day + 1))) {
-                        selectedDate = selectedDate.add( Duration(days: 1));
-                        if (!updatedData.any((item) => item['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDate))) {
-                          setState(() {
-                            updatedData.add({
-                              'selectedDate': DateFormat('dd-MM-yyyy').format(selectedDate),
-                              'operationStatus': 'Unlocked',
-                              'categorylist': List.from(defaultCategory),
-                            });
-                          });
-                          print(updatedData);
-                        }
+                      if (selectedDate.add(Duration(days: 1)).isBefore(
+                          DateTime(currentdate.year, currentdate.month, currentdate.day + 1))) {
+                        selectedDate = selectedDate.add(Duration(days: 1));
+                        _ensureDateExists();
                       }
                     });
                   },
@@ -300,9 +304,9 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: updatedData[0]['categorylist'].length + 1,
+              itemCount: selectedDateData['categorylist'].length + 1,
               itemBuilder: (context, index) {
-                if (index == updatedData[0]['categorylist'].length) {
+                if (index == selectedDateData['categorylist'].length) {
                   return Column(
                     children: [
                       Padding(
@@ -330,7 +334,7 @@ class _HomePageState extends State<HomePage> {
                     ],
                   );
                 }
-                final item = updatedData[0]['categorylist'][index];
+                final item = selectedDateData['categorylist'][index];
                 return Column(
                   children: [
                     ListTile(
@@ -631,3 +635,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+
