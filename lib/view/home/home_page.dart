@@ -60,7 +60,11 @@ class _HomePageState extends State<HomePage> {
       updatedData.add({
         'selectedDate': formattedDate,
         'operationStatus': 'Unlocked',
-        'categorylist': List.from(defaultCategory),
+        'categorylist': [
+          {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
+          {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
+          {'category': 'Fundraising-General', 'time': '7:00', 'journals': ''},
+        ],
       });
     }
   }
@@ -119,12 +123,20 @@ class _HomePageState extends State<HomePage> {
             updatedData.add({
               'selectedDate': formattedDate,
               'operationStatus': 'Unlocked',
-              'categorylist': List.from(defaultCategory),
+              'categorylist': [
+                {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
+                {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
+                {'category': 'Fundraising-General', 'time': '7:00', 'journals': ''},
+              ],
             });
             return {
               'selectedDate': formattedDate,
               'operationStatus': 'Unlocked',
-              'categorylist': List.from(defaultCategory),
+              'categorylist': [
+                {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
+                {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
+                {'category': 'Fundraising-General', 'time': '7:00', 'journals': ''},
+              ],
             };
           },
         );
@@ -643,4 +655,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
