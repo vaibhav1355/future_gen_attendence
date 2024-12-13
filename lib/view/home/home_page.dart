@@ -254,12 +254,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _lockDate() {
-    setState(() {
-      _getSelectedDateData()['isLocked'] = true;
-    });
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -336,7 +330,11 @@ class _HomePageState extends State<HomePage> {
                           alignment: Alignment.centerLeft,
                           child: InkWell(
                             onTap: () {
-                              if (!_islocked) _showCategoryBottomSheet(context);
+                              setState(() {
+                                if (selectedDateData['isLocked'] == false) {
+                                  _showCategoryBottomSheet(context);
+                                }
+                              });
                             },
                             child: Image.asset(
                               'assets/images/add_img.png',
@@ -379,8 +377,11 @@ class _HomePageState extends State<HomePage> {
                       title: InkWell(
                         onTap: () =>
                         {
-                          if(!_islocked)
-                            _selectTime(context, index)
+                          setState(() {
+                            if (selectedDateData['isLocked'] == false) {
+                            _selectTime(context, index);
+                            }
+                          })
                         },
                         child: Row(
                           children: [
@@ -659,4 +660,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
