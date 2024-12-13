@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:futuregen_attendance/view/home/date_and_hour.dart';
 import 'package:intl/intl.dart';
+
+import '../drawer/about_us.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,7 +13,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
-  bool _islocked = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   DateTime selectedDate = DateTime.now();
   final DateTime currentdate = DateTime.now();
@@ -254,7 +257,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     _ensureDateExists();
@@ -262,15 +264,70 @@ class _HomePageState extends State<HomePage> {
     final isLocked = selectedDateData['isLocked'] ?? false;
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        leading: Icon(Icons.menu, size: 26, color: Colors.white),
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          icon: Icon(Icons.menu, size: 26, color: Colors.white),
+        ),
         centerTitle: true,
         title: Text(
           'Home',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: Colors.black,
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            SizedBox(height: 50),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Home'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.account_circle),
+              title: Text('Profile'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.info),
+              title: Text('About Us'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AboutUsScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+                // Navigate to Settings Screen (Replace with your actual screen)
+
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.exit_to_app),
+              title: Text('Log Out'),
+              onTap: () {
+                // Implement log out functionality here
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+
       body: Column(
         children: [
           Container(
@@ -378,9 +435,9 @@ class _HomePageState extends State<HomePage> {
                         onTap: () =>
                         {
                           setState(() {
-                            if (selectedDateData['isLocked'] == false) {
-                            _selectTime(context, index);
-                            }
+                              if (selectedDateData['isLocked'] == false) {
+                              _selectTime(context, index);
+                              }
                           })
                         },
                         child: Row(
@@ -440,13 +497,13 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (!isLocked) // Check if the current date is not locked
+                if (!isLocked)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       MaterialButton(
                         onPressed: () {
-                          // Add your save logic here
+
                         },
                         color: Colors.black,
                         minWidth: 160,
@@ -480,7 +537,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                if (isLocked) // Display locked status if the current date is locked
+                if (isLocked)
                   Container(
                     width: MediaQuery.sizeOf(context).width * 0.8,
                     height: 45,
@@ -501,160 +558,7 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          InkWell(
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                shape:  RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                builder: (BuildContext context) {
-                  return Wrap(
-                    children: [
-                      Column(
-                        children: [
-                          InkWell(
-                            onTap: (){
-                              Navigator.pop(context);
-                            }, // close the showModelBottomSheet
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: MediaQuery.of(context).size.width * 0.5,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff39ba53),
-                                  ),
-                                  padding: EdgeInsets.all(12),
-                                  child: Center(
-                                    child: Text(
-                                      'D-212.7',
-                                      style: TextStyle(fontSize: 20, color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: MediaQuery.of(context).size.width * 0.5,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xffde3232),
-                                  ),
-                                  padding: EdgeInsets.all(12),
-                                  child: Center(
-                                    child: Text(
-                                      'H-1701.58',
-                                      style: TextStyle(fontSize: 20, color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding:  EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(height: 16),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children:  [
-                                    Text(
-                                      'Total Hours:',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                    Text(
-                                      '212.7',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 14),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children:  [
-                                    Text(
-                                      'Left Hours:',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                    Text(
-                                      '50', // Replace with dynamic data if needed
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 14),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children:  [
-                                    Text(
-                                      'Total Days:',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                    Text(
-                                      '30', // Replace with dynamic data if needed
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 14),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children:  [
-                                    Text(
-                                      'Left Days:',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                    Text(
-                                      '10',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 16),
-                              ],
-                            ),
-                          )
-                        ],
-                      )
-                    ],
-                  );
-                },
-              );
-            } ,
-            child: Row(
-              children: [
-                Container(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Color(0xff39ba53),
-                  ),
-                  padding: EdgeInsets.all(12),
-                  child: Center(
-                    child: Text(
-                      'D-212.7',
-                      style: TextStyle(fontSize: 20, color: Colors.white),
-                    ),
-                  ),
-                ),
-                Container(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Color(0xffde3232),
-                  ),
-                  padding: EdgeInsets.all(12),
-                  child: Center(
-                    child: Text(
-                      'H-1701.58',
-                      style: TextStyle(fontSize: 20, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          DateAndHour(),
         ],
       ),
     );

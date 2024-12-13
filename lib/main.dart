@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:futuregen_attendance/view/Home/home_page.dart';
+import 'package:futuregen_attendance/view/home/journal.dart';
 import 'package:futuregen_attendance/view/login/forgot_password.dart';
 import 'package:futuregen_attendance/view/login/login_screen.dart';
+import 'package:futuregen_attendance/view/navigationbar/navigation.dart';
 
 void main() {
   runApp(MyApp());
@@ -20,7 +22,6 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: HomePage(),
-      //Login(),
     );
   }
 }
