@@ -17,8 +17,8 @@ class _HomePageState extends State<HomePage> {
 
   final List<Map<String, dynamic>> updatedData = [
     {
-      'selectedDate': '12-12-2024',
-      'operationStatus': 'Unlocked',
+      'selectedDate': '13-12-2024',
+      'isLocked': false,
       'categorylist': [
         {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
         {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
@@ -26,20 +26,14 @@ class _HomePageState extends State<HomePage> {
       ],
     },
     {
-      'selectedDate': '11-12-2024',
-      'operationStatus': 'Unlocked',
+      'selectedDate': '12-12-2024',
+      'isLocked': false,
       'categorylist': [
         {'category': 'Admin-General', 'time': '4:00', 'journals': ''},
         {'category': 'Academic-General', 'time': '12:00', 'journals': ''},
       ],
     },
   ];
-
-  // List<Map<String, String>> defaultCategory = [
-  //   {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
-  //   {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
-  //   {'category': 'Fundraising-General', 'time': '7:00', 'journals': ''},
-  // ];
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -61,7 +55,7 @@ class _HomePageState extends State<HomePage> {
     if (!updatedData.any((item) => item['selectedDate'] == formattedDate)) {
       updatedData.add({
         'selectedDate': formattedDate,
-        'operationStatus': 'Unlocked',
+        'isLocked': false,
         'categorylist': [
           {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
           {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
@@ -77,7 +71,7 @@ class _HomePageState extends State<HomePage> {
           (item) => item['selectedDate'] == formattedDate,
       orElse: () => {
         'selectedDate': formattedDate,
-        'operationStatus': 'Unlocked',
+        'isLocked': false,
         'categorylist': [],
       },
     );
@@ -123,7 +117,7 @@ class _HomePageState extends State<HomePage> {
           orElse: () {
             updatedData.add({
               'selectedDate': formattedDate,
-              'operationStatus': 'Unlocked',
+              'isLocked': false,
               'categorylist': [
                 {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
                 {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
@@ -132,7 +126,7 @@ class _HomePageState extends State<HomePage> {
             });
             return {
               'selectedDate': formattedDate,
-              'operationStatus': 'Unlocked',
+              'isLocked': false,
               'categorylist': [
                 {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
                 {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
@@ -260,10 +254,18 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _lockDate() {
+    setState(() {
+      _getSelectedDateData()['isLocked'] = true;
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     _ensureDateExists();
     var selectedDateData = _getSelectedDateData();
+    final isLocked = selectedDateData['isLocked'] ?? false;
 
     return Scaffold(
       appBar: AppBar(
@@ -320,6 +322,7 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
+          SizedBox(height: 16),
           Expanded(
             child: ListView.builder(
               itemCount: selectedDateData['categorylist'].length + 1,
@@ -375,10 +378,10 @@ class _HomePageState extends State<HomePage> {
                       ),
                       title: InkWell(
                         onTap: () =>
-                            {
-                              if(!_islocked)
-                                _selectTime(context, index)
-                            },
+                        {
+                          if(!_islocked)
+                            _selectTime(context, index)
+                        },
                         child: Row(
                           children: [
                             SizedBox(width: 10, height: 50),
@@ -431,19 +434,18 @@ class _HomePageState extends State<HomePage> {
               },
             ),
           ),
-          SizedBox(height: 16),
           Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (!_islocked)
+                if (!isLocked) // Check if the current date is not locked
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       MaterialButton(
                         onPressed: () {
-                          // Implement save logic here
+                          // Add your save logic here
                         },
                         color: Colors.black,
                         minWidth: 160,
@@ -460,7 +462,7 @@ class _HomePageState extends State<HomePage> {
                       MaterialButton(
                         onPressed: () {
                           setState(() {
-                            _islocked = true;
+                            selectedDateData['isLocked'] = true;
                           });
                         },
                         color: Colors.black,
@@ -470,14 +472,14 @@ class _HomePageState extends State<HomePage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4.0),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Lock',
                           style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                       ),
                     ],
                   ),
-                if (_islocked)
+                if (isLocked) // Display locked status if the current date is locked
                   Container(
                     width: MediaQuery.sizeOf(context).width * 0.8,
                     height: 45,
@@ -657,3 +659,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
