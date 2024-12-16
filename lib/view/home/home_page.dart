@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:futuregen_attendance/view/home/date_and_hour.dart';
+import 'package:futuregen_attendance/view/home/journal.dart';
 import 'package:intl/intl.dart';
 
 import '../drawer/about_us.dart';
+import 'locking_and_saving.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -435,9 +437,9 @@ class _HomePageState extends State<HomePage> {
                         onTap: () =>
                         {
                           setState(() {
-                              if (selectedDateData['isLocked'] == false) {
+                            if (selectedDateData['isLocked'] == false) {
                               _selectTime(context, index);
-                              }
+                            }
                           })
                         },
                         child: Row(
@@ -465,7 +467,9 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       trailing: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=>Journal()));
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xffefcd1a),
                           shape: RoundedRectangleBorder(
@@ -492,75 +496,29 @@ class _HomePageState extends State<HomePage> {
               },
             ),
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (!isLocked)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      MaterialButton(
-                        onPressed: () {
-
-                        },
-                        color: Colors.black,
-                        minWidth: 160,
-                        height: 45,
-                        padding: const EdgeInsets.all(12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
-                        child: const Text(
-                          'Save',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                      ),
-                      MaterialButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedDateData['isLocked'] = true;
-                          });
-                        },
-                        color: Colors.black,
-                        minWidth: 160,
-                        height: 45,
-                        padding: const EdgeInsets.all(12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
-                        child: Text(
-                          'Lock',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                if (isLocked)
-                  Container(
-                    width: MediaQuery.sizeOf(context).width * 0.8,
-                    height: 45,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Locked',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+          LockAndSaving(
+            selectedDateData: _getSelectedDateData(),
+            onSave: () {
+              String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
+              print("Data saved for $formattedDate");
+            },
+            onLock: () {
+              setState(() {
+                String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
+                var dateEntry = updatedData.firstWhere(
+                      (item) => item['selectedDate'] == formattedDate,
+                );
+                if (dateEntry != null) {
+                  dateEntry['isLocked'] = true;
+                  print("Date $formattedDate is locked.");
+                }
+              });
+            },
           ),
           DateAndHour(),
         ],
       ),
     );
   }
+
 }
