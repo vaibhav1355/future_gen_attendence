@@ -18,20 +18,22 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   DateTime selectedDate = DateTime.now();
-  final DateTime currentdate = DateTime.now();
+  final DateTime currentDate = DateTime.now(); // Current date and time
+  DateTime firstDate = DateTime(2024, 12, 12); // Target date
 
   final List<Map<String, dynamic>> updatedData = [
     {
-      'selectedDate': '13-12-2024',
+      'selectedDate': '16-12-2024',
       'isLocked': false,
       'categorylist': [
         {'category': 'Admin-General', 'time': '8:00', 'journals': ''},
         {'category': 'Academic-General', 'time': '9:00', 'journals': ''},
         {'category': 'Customer Service-General', 'time': '6:00', 'journals': ''},
+        {'category': 'Marketing-General', 'time': '6:00', 'journals': ''},
       ],
     },
     {
-      'selectedDate': '12-12-2024',
+      'selectedDate': '15-12-2024',
       'isLocked': false,
       'categorylist': [
         {'category': 'Admin-General', 'time': '4:00', 'journals': ''},
@@ -44,8 +46,8 @@ class _HomePageState extends State<HomePage> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime(2018, 8),
-      lastDate: currentdate,
+      firstDate: DateTime(2024, 10, 15),
+      lastDate: currentDate,
     );
     if (picked != null && picked != selectedDate) {
       setState(() {
@@ -79,6 +81,26 @@ class _HomePageState extends State<HomePage> {
         'isLocked': false,
         'categorylist': [],
       },
+    );
+  }
+
+  void _navigateToJournalScreen(BuildContext context, int index, String category, String initialJournalText) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => JournalScreen(
+          index: index,
+          category: category,
+          initialJournalText: initialJournalText,
+          // Provide a callback function to update the parent's state
+          onJournalUpdate: (updatedText) {
+            setState(() {
+              updatedData.firstWhere((item) => item['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDate))
+              ['categorylist'][index]['journals'] = updatedText;
+            });
+          },
+        ),
+      ),
     );
   }
 
@@ -365,7 +387,7 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () {
                     setState(() {
                       if (selectedDate.add(Duration(days: 1)).isBefore(
-                          DateTime(currentdate.year, currentdate.month, currentdate.day + 1))) {
+                          DateTime(currentDate.year, currentDate.month, currentDate.day + 1))) {
                         selectedDate = selectedDate.add(Duration(days: 1));
                         _ensureDateExists();
                       }
@@ -420,12 +442,12 @@ class _HomePageState extends State<HomePage> {
                       leading: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 6.0),
                         child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.3,
+                          width: MediaQuery.of(context).size.width * 0.29,
                           child: Text(
                             item['category'],
                             style: TextStyle(
                               color: Colors.grey,
-                              fontSize: 18,
+                              fontSize: 17,
                               fontWeight: FontWeight.w600,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -468,7 +490,13 @@ class _HomePageState extends State<HomePage> {
                       ),
                       trailing: ElevatedButton(
                         onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=>Journal()));
+                          if(!isLocked)
+                            _navigateToJournalScreen(
+                              context,
+                              index,
+                              item['category'],
+                              item['journals'], // Initial journal text
+                            );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xffefcd1a),
@@ -520,5 +548,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 }
