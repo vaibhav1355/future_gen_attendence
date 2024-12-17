@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 class DateAndHour extends StatelessWidget {
-  const DateAndHour({super.key});
+  int totalHours ;
+  int totalDays ;
+  int leftHours;
+  int leftDays;
+
+  DateAndHour({required this.totalHours , required this.totalDays , required this.leftHours , required this.leftDays});
 
   @override
   Widget build(BuildContext context) {
@@ -9,7 +14,7 @@ class DateAndHour extends StatelessWidget {
       onTap: () {
         showModalBottomSheet(
           context: context,
-          shape:  RoundedRectangleBorder(
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           builder: (BuildContext context) {
@@ -18,9 +23,9 @@ class DateAndHour extends StatelessWidget {
                 Column(
                   children: [
                     InkWell(
-                      onTap: (){
-                        Navigator.pop(context);
-                      }, // close the showModelBottomSheet
+                      onTap: () {
+                        Navigator.pop(context); // close the showModalBottomSheet
+                      },
                       child: Row(
                         children: [
                           Container(
@@ -32,7 +37,7 @@ class DateAndHour extends StatelessWidget {
                             padding: EdgeInsets.all(12),
                             child: Center(
                               child: Text(
-                                'D-212.7',
+                                'D-$leftDays',
                                 style: TextStyle(fontSize: 20, color: Colors.white),
                               ),
                             ),
@@ -46,7 +51,7 @@ class DateAndHour extends StatelessWidget {
                             padding: EdgeInsets.all(12),
                             child: Center(
                               child: Text(
-                                'H-1701.58',
+                                'H-$leftHours',
                                 style: TextStyle(fontSize: 20, color: Colors.white),
                               ),
                             ),
@@ -55,20 +60,20 @@ class DateAndHour extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      padding:  EdgeInsets.all(16.0),
+                      padding: EdgeInsets.all(16.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           SizedBox(height: 16),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children:  [
+                            children: [
                               Text(
                                 'Total Hours:',
                                 style: TextStyle(fontSize: 16),
                               ),
                               Text(
-                                '212.7',
+                                '$totalHours',
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -76,13 +81,13 @@ class DateAndHour extends StatelessWidget {
                           SizedBox(height: 14),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children:  [
+                            children: [
                               Text(
                                 'Left Hours:',
                                 style: TextStyle(fontSize: 16),
                               ),
                               Text(
-                                '50', // Replace with dynamic data if needed
+                                '$leftHours',
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -90,13 +95,13 @@ class DateAndHour extends StatelessWidget {
                           SizedBox(height: 14),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children:  [
+                            children: [
                               Text(
                                 'Total Days:',
                                 style: TextStyle(fontSize: 16),
                               ),
                               Text(
-                                '30', // Replace with dynamic data if needed
+                                '$totalDays',
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -104,13 +109,13 @@ class DateAndHour extends StatelessWidget {
                           SizedBox(height: 14),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children:  [
+                            children: [
                               Text(
                                 'Left Days:',
                                 style: TextStyle(fontSize: 16),
                               ),
                               Text(
-                                '10',
+                                '$leftDays',
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -118,14 +123,14 @@ class DateAndHour extends StatelessWidget {
                           SizedBox(height: 16),
                         ],
                       ),
-                    )
+                    ),
                   ],
-                )
+                ),
               ],
             );
           },
         );
-      } ,
+      },
       child: Row(
         children: [
           Container(
@@ -137,7 +142,7 @@ class DateAndHour extends StatelessWidget {
             padding: EdgeInsets.all(12),
             child: Center(
               child: Text(
-                'D-212.7',
+                'D-$leftDays',
                 style: TextStyle(fontSize: 20, color: Colors.white),
               ),
             ),
@@ -151,7 +156,7 @@ class DateAndHour extends StatelessWidget {
             padding: EdgeInsets.all(12),
             child: Center(
               child: Text(
-                'H-1701.58',
+                'H- $leftHours',
                 style: TextStyle(fontSize: 20, color: Colors.white),
               ),
             ),
@@ -161,3 +166,7 @@ class DateAndHour extends StatelessWidget {
     );
   }
 }
+
+
+
+

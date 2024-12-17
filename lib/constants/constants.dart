@@ -10,8 +10,6 @@ class ScreenSize {
   }
 }
 
-
-
 const SizedBoxHeight10 = SizedBox(height: 10);
 const SizedBoxHeight15 = SizedBox(height: 15);
 const SizedBoxHeight20 = SizedBox(height: 20);

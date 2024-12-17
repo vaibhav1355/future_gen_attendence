@@ -4,13 +4,13 @@ class JournalScreen extends StatefulWidget {
   final int index;
   final String category;
   final String initialJournalText;
-  final Function(String) onJournalUpdate; // Add this callback
+  final Function(String) onJournalUpdate;
 
   JournalScreen({
     required this.index,
     required this.category,
     required this.initialJournalText,
-    required this.onJournalUpdate, // Include this in the constructor
+    required this.onJournalUpdate,
   });
 
   @override
@@ -24,21 +24,17 @@ class _JournalScreenState extends State<JournalScreen> {
   void initState() {
     super.initState();
     _journalController.text = widget.initialJournalText;
-    // Add listener to save text as user types
     _journalController.addListener(_saveJournalText);
   }
 
-  // Function to save journal text whenever it changes
   void _saveJournalText() {
-    // This will update the parent widget's journal text as the user types
     final updatedText = _journalController.text;
-    // You can update the state of the parent widget (via the callback or state management)
     widget.onJournalUpdate(updatedText);
   }
 
   @override
   void dispose() {
-    _journalController.removeListener(_saveJournalText); // Remove the listener when the widget is disposed
+    _journalController.removeListener(_saveJournalText);
     _journalController.dispose();
     super.dispose();
   }
@@ -50,22 +46,20 @@ class _JournalScreenState extends State<JournalScreen> {
         title: Text("Journal - ${widget.category}"),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Category: ${widget.category}",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
             SizedBox(height: 16),
             TextField(
               controller: _journalController,
+              focusNode: FocusNode(),
+              autofocus: true,
               decoration: InputDecoration(
                 hintText: "Enter your journal entry here...",
-                border: OutlineInputBorder(),
+                border: InputBorder.none,
               ),
-              maxLines: 10,
+              maxLines: null,
             ),
           ],
         ),
