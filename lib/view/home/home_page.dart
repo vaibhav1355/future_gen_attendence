@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:futuregen_attendance/view/drawer/app_drawer.dart';
-import 'package:futuregen_attendance/view/home/date_and_hour.dart';
+import 'package:futuregen_attendance/view/home/display_bottom_date_and_hour.dart';
 import 'package:futuregen_attendance/view/home/journal.dart';
 import 'package:intl/intl.dart';
 
-import '../drawer/about_us.dart';
+import '../../Constants/constants.dart';
+
+import 'display_category_list.dart';
 import 'locking_and_saving.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,37 +20,34 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
   int totalDays = 0;
-  int totalHours = 0;
+  double totalHours = 0;
   int currentDays = 0;
-  int leftHours = 0;
-  int leftMinutes = 0;
-  int leftDays = 0;
+  double leftHours = 0;
+  double leftMinutes = 0;
+  double leftDays = 0;
 
-  final DateTime firstDate = DateTime(2024, 12, 10);
-  final DateTime secondDate = DateTime(2024, 12, 25);
+  final DateTime startDate = DateTime(2024, 12, 15);
+  final DateTime endDate = DateTime(2024, 12, 30);
   final DateTime currentDate = DateTime.now();
   DateTime selectedDate = DateTime.now();
-
 
   @override
   void initState() {
     super.initState();
-    totalDays = _daysBetween(firstDate, secondDate);
-    currentDays = _daysBetween(firstDate, currentDate);
+    totalDays = _daysBetween(startDate, endDate);
+    currentDays = _daysBetween(startDate, currentDate);
     totalHours = totalDays * 8;
-    leftDays = totalDays - currentDays;
     _populateDataForDateRange();
     _calculateLeftHours();
   }
 
   int _daysBetween(DateTime start, DateTime end) => end.difference(start).inDays;
 
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final List<Map<String, dynamic>> updatedData = [
     {
-      'selectedDate': '17-12-2024',
+      'selectedDate': '18-12-2024',
       'isLocked': false,
       'categorylist': [
         {'category': 'Admin-General', 'time': '2:00', 'journals': ''},
@@ -57,7 +57,7 @@ class _HomePageState extends State<HomePage> {
       ],
     },
     {
-      'selectedDate': '16-12-2024',
+      'selectedDate': '17-12-2024',
       'isLocked': false,
       'categorylist': [
         {'category': 'Admin-General', 'time': '4:00', 'journals': ''},
@@ -70,14 +70,14 @@ class _HomePageState extends State<HomePage> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime(2024, 10, 15),
+      firstDate: startDate,
       lastDate: currentDate,
     );
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
         _ensureDateExists();
-        _calculateLeftHours(); // Recalculate left hours and minutes after changing date
+        _calculateLeftHours();
       });
     }
   }
@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _populateDataForDateRange() {
-    DateTime tempDate = firstDate;
+    DateTime tempDate = startDate;
     while (tempDate.isBefore(currentDate) || tempDate.isAtSameMomentAs(currentDate)) {
       final formattedDate = DateFormat('dd-MM-yyyy').format(tempDate);
       if (!updatedData.any((item) => item['selectedDate'] == formattedDate)) {
@@ -169,10 +169,13 @@ class _HomePageState extends State<HomePage> {
     totalUsedHours += totalUsedMinutes ~/ 60;
     totalUsedMinutes %= 60;
 
+    double remainingHours = totalHours - totalUsedHours - (totalUsedMinutes / 60);
+
     setState(() {
-      leftHours = totalHours - totalUsedHours;
+      leftHours = double.parse(remainingHours.toStringAsFixed(2));
       leftMinutes = (60 - totalUsedMinutes) % 60;
-      print('leftHours: $leftHours  leftMinutes: $leftMinutes');
+      leftDays = double.parse(((remainingHours) / 8).toStringAsFixed(2));
+      print('leftHours: $leftHours  leftDays: $leftDays');
     });
   }
 
@@ -234,56 +237,6 @@ class _HomePageState extends State<HomePage> {
     'Event Management-General',
     'Customer Service-General',
   ];
-
-  // Future<void> _selectTime(BuildContext context, int index) async {
-  //
-  //   final TimeOfDay? picked = await showTimePicker(
-  //     context: context,
-  //     initialTime: TimeOfDay(hour: 00, minute: 00),
-  //     initialEntryMode: TimePickerEntryMode.dial,
-  //   );
-  //
-  //   if (picked != null) {
-  //     setState(() {
-  //       final newTime = DateTime(
-  //         selectedDate.year,
-  //         selectedDate.month,
-  //         selectedDate.day,
-  //         picked.hour,
-  //         picked.minute,
-  //       );
-  //
-  //       String formattedTime = DateFormat('HH:mm').format(newTime);
-  //
-  //       String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
-  //
-  //       var dateEntry = updatedData.firstWhere(
-  //             (item) => item['selectedDate'] == formattedDate,
-  //         orElse: () {
-  //           updatedData.add({
-  //             'selectedDate': formattedDate,
-  //             'isLocked': false,
-  //             'categorylist': [
-  //               {'category': 'Admin-General', 'time': '3:00', 'journals': ''},
-  //               {'category': 'Academic-General', 'time': '3:00', 'journals': ''},
-  //               {'category': 'Fundraising-General', 'time': '2:00', 'journals': ''},
-  //             ],
-  //           });
-  //           return {
-  //             'selectedDate': formattedDate,
-  //             'isLocked': false,
-  //             'categorylist': [
-  //               {'category': 'Admin-General', 'time': '3:00', 'journals': ''},
-  //               {'category': 'Academic-General', 'time': '3:00', 'journals': ''},
-  //               {'category': 'Fundraising-General', 'time': '2:00', 'journals': ''},
-  //             ],
-  //           };
-  //         },
-  //       );
-  //       dateEntry['categorylist'][index]['time'] = formattedTime;
-  //     });
-  //   }
-  // }
 
   void _showCategoryBottomSheet(BuildContext context) {
 
@@ -433,9 +386,11 @@ class _HomePageState extends State<HomePage> {
                   icon: Icon(Icons.arrow_back_ios, color: Colors.white),
                   onPressed: () {
                     setState(() {
-                      selectedDate = selectedDate.subtract(Duration(days: 1));
-                      _ensureDateExists();
-                      print('hehe: $updatedData');
+                      if (selectedDate.subtract(Duration(days: 1)).isAfter(startDate)) {
+                        selectedDate = selectedDate.subtract(Duration(days: 1));
+                        _ensureDateExists();
+                        print('hehe: $updatedData');
+                      }
                     });
                   },
                 ),
@@ -465,127 +420,13 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          SizedBox(height: 16),
-          Expanded(
-            child: ListView.builder(
-              itemCount: selectedDateData['categorylist'].length + 1,
-              itemBuilder: (context, index) {
-                if (index == selectedDateData['categorylist'].length) {
-                  return Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(top: 8, left: 20.0, bottom: 8),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: InkWell(
-                            onTap: () {
-                              setState(() {
-                                if (selectedDateData['isLocked'] == false) {
-                                  _showCategoryBottomSheet(context);
-                                }
-                              });
-                            },
-                            child: Image.asset(
-                              'assets/images/add_img.png',
-                              height: 50,
-                              width: 50,
-                              color: Colors.grey,
-                              semanticLabel: "Add item",
-                            ),
-                          ),
-                        ),
-                      ),
-                      Divider(),
-                    ],
-                  );
-                }
-                final item = selectedDateData['categorylist'][index];
-                return Column(
-                  children: [
-                    ListTile(
-                      contentPadding: EdgeInsets.only(left: 30, top: 8, bottom: 8, right: 10),
-                      leading: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 6.0),
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.29,
-                          child: Text(
-                            item['category'],
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                          ),
-                        ),
-                      ),
-                      title: InkWell(
-                        onTap: () =>
-                        {
-                          setState(() {
-                            if (selectedDateData['isLocked'] == false) {
-                              _selectTime(context, index);
-                              _calculateLeftHours();
-                            }
-                          })
-                        },
-                        child: Row(
-                          children: [
-                            SizedBox(width: 10, height: 50),
-                            Flexible(
-                              child: Text(
-                                item['time'],
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 25, height: 50),
-                            Image.asset(
-                              'assets/images/caret_arrow_up.png',
-                              height: 20,
-                              width: 20,
-                              semanticLabel: "Select time",
-                            ),
-                            SizedBox(width: 5, height: 5),
-                          ],
-                        ),
-                      ),
-                      trailing: ElevatedButton(
-                        onPressed: () {
-                          if(!isLocked)
-                            _navigateToJournalScreen(
-                              context,
-                              index,
-                              item['category'],
-                              item['journals'],
-                            );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xffefcd1a),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32.0),
-                          ),
-                          padding: EdgeInsets.all(12),
-                          minimumSize: Size(110, 38),
-                        ),
-                        child: Text(
-                          'Journal',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xff121212),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Divider(),
-                  ],
-                );
-              },
-            ),
+          SizedBoxHeight10,
+          DisplayCategoryList(
+            selectedDateData: _getSelectedDateData(),
+            showCategoryBottomSheet: _showCategoryBottomSheet,
+            selectTime: _selectTime,
+            calculateLeftHours: _calculateLeftHours,
+            navigateToJournalScreen: _navigateToJournalScreen,
           ),
           LockAndSaving(
             selectedDateData: _getSelectedDateData(),
@@ -606,7 +447,7 @@ class _HomePageState extends State<HomePage> {
               });
             },
           ),
-          DateAndHour(totalHours: totalHours,totalDays : totalDays, leftHours: leftHours, leftDays: leftDays),
+          DisplayBottomDateAndHour(totalHours: totalHours,totalDays : totalDays, leftHours: leftHours, leftDays: leftDays),
         ],
       ),
     );

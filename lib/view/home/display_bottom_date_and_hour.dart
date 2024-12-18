@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-class DateAndHour extends StatelessWidget {
-  int totalHours ;
+class DisplayBottomDateAndHour extends StatelessWidget {
+  double totalHours ;
   int totalDays ;
-  int leftHours;
-  int leftDays;
+  double leftHours;
+  double leftDays;
 
-  DateAndHour({required this.totalHours , required this.totalDays , required this.leftHours , required this.leftDays});
+  DisplayBottomDateAndHour({required this.totalHours , required this.totalDays , required this.leftHours , required this.leftDays});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class DateAndHour extends StatelessWidget {
                   children: [
                     InkWell(
                       onTap: () {
-                        Navigator.pop(context); // close the showModalBottomSheet
+                        Navigator.pop(context);
                       },
                       child: Row(
                         children: [
