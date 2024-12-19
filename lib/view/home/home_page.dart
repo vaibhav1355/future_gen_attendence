@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
 
   int totalDays = 0;
   double totalHours = 0;
-  int currentDays = 0;
+
   double leftHours = 0;
   double leftMinutes = 0;
   double leftDays = 0;
@@ -35,7 +35,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     totalDays = _daysBetween(startDate, endDate);
-    currentDays = _daysBetween(startDate, currentDate);
     totalHours = totalDays * 8;
     _populateDataForDateRange();
     _calculateLeftHours();
@@ -47,21 +46,21 @@ class _HomePageState extends State<HomePage> {
 
   final List<Map<String, dynamic>> updatedData = [
     {
-      'selectedDate': '18-12-2024',
+      'selectedDate': '19-12-2024',
       'isLocked': false,
       'categorylist': [
-        {'category': 'Admin-General', 'time': '2:00', 'journals': ''},
-        {'category': 'Academic-General', 'time': '2:00', 'journals': ''},
-        {'category': 'Customer Service-General', 'time': '2:00', 'journals': ''},
-        {'category': 'Marketing-General', 'time': '2:00', 'journals': ''},
+        {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
+        {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
+        {'category': 'Customer Service-General', 'time': '0:00', 'journals': ''},
+        {'category': 'Marketing-General', 'time': '0:00', 'journals': ''},
       ],
     },
     {
-      'selectedDate': '17-12-2024',
+      'selectedDate': '18-12-2024',
       'isLocked': false,
       'categorylist': [
-        {'category': 'Admin-General', 'time': '4:00', 'journals': ''},
-        {'category': 'Academic-General', 'time': '4:00', 'journals': ''},
+        {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
+        {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
       ],
     },
   ];
@@ -110,18 +109,18 @@ class _HomePageState extends State<HomePage> {
               'selectedDate': formattedDate,
               'isLocked': false,
               'categorylist': [
-                {'category': 'Admin-General', 'time': '3:00', 'journals': ''},
-                {'category': 'Academic-General', 'time': '3:00', 'journals': ''},
-                {'category': 'Fundraising-General', 'time': '2:00', 'journals': ''},
+                {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
+                {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
+                {'category': 'Fundraising-General', 'time': '0:00', 'journals': ''},
               ],
             });
             return {
               'selectedDate': formattedDate,
               'isLocked': false,
               'categorylist': [
-                {'category': 'Admin-General', 'time': '3:00', 'journals': ''},
-                {'category': 'Academic-General', 'time': '3:00', 'journals': ''},
-                {'category': 'Fundraising-General', 'time': '2:00', 'journals': ''},
+                {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
+                {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
+                {'category': 'Fundraising-General', 'time': '0:00', 'journals': ''},
               ],
             };
           },
@@ -142,9 +141,9 @@ class _HomePageState extends State<HomePage> {
           'selectedDate': formattedDate,
           'isLocked': false,
           'categorylist': [
-            {'category': 'Admin-General', 'time': '3:00', 'journals': ''},
-            {'category': 'Academic-General', 'time': '3:00', 'journals': ''},
-            {'category': 'Fundraising-General', 'time': '2:00', 'journals': ''},
+            {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
+            {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
+            {'category': 'Fundraising-General', 'time': '0:00', 'journals': ''},
           ],
         });
       }
@@ -186,9 +185,9 @@ class _HomePageState extends State<HomePage> {
         'selectedDate': formattedDate,
         'isLocked': false,
         'categorylist': [
-          {'category': 'Admin-General', 'time': '3:00', 'journals': ''},
-          {'category': 'Academic-General', 'time': '3:00', 'journals': ''},
-          {'category': 'Fundraising-General', 'time': '2:00', 'journals': ''},
+          {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
+          {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
+          {'category': 'Fundraising-General', 'time': '0:00', 'journals': ''},
         ],
       });
     }
@@ -453,5 +452,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
 
