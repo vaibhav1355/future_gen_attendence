@@ -18,12 +18,12 @@ class JournalScreen extends StatefulWidget {
 }
 
 class _JournalScreenState extends State<JournalScreen> {
-  TextEditingController _journalController = TextEditingController();
+  late TextEditingController _journalController;
 
   @override
   void initState() {
     super.initState();
-    _journalController.text = widget.initialJournalText;
+    _journalController = TextEditingController(text: widget.initialJournalText);
     _journalController.addListener(_saveJournalText);
   }
 
@@ -53,7 +53,6 @@ class _JournalScreenState extends State<JournalScreen> {
             SizedBox(height: 16),
             TextField(
               controller: _journalController,
-              focusNode: FocusNode(),
               autofocus: true,
               decoration: InputDecoration(
                 hintText: "Enter your journal entry here...",
@@ -67,4 +66,5 @@ class _JournalScreenState extends State<JournalScreen> {
     );
   }
 }
+
 

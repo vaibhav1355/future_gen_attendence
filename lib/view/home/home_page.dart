@@ -9,7 +9,6 @@ import '../../Constants/constants.dart';
 import 'display_category_list.dart';
 import 'locking_and_saving.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -19,69 +18,157 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
-  int totalDays = 0;
-  double totalHours = 0;
+  final List<Map<String, dynamic>> updatedData = [
+    {
+      "startDate": "03-12-2024",
+      "endDate": "05-12-2024",
+      "totalDays": 0,
+      "leftDays" : 0.0,
+      "totalHours": 0.0,
+      "leftHours": 0.0,
+      "entries": [
+        {
+          "selectedDate": "03-12-2024",
+          "isLocked": false,
+          "categorylist": [
+            {'category': 'Admin-General', 'time': '1:15', 'journals': ''},
+            {'category': 'Academic-General', 'time': '1:30', 'journals': ''},
+            {'category': 'Customer Service-General', 'time': '2:15', 'journals': ''},
+            {'category': 'Marketing-General', 'time': '1:15', 'journals': ''},
+          ],
+        },
+      ],
+    },
+    {
+      "startDate": "15-12-2024",
+      "endDate": "19-12-2024",
+      "totalDays": 0,
+      "leftDays" : 0.0,
+      "totalHours": 0.0,
+      "leftHours": 0.0,
+      "entries": [
+        {
+          "selectedDate": "17-12-2024",
+          "isLocked": false,
+          "categorylist": [
+            {'category': 'Admin-General', 'time': '02:25', 'journals': ''},
+            {'category': 'Academic-General', 'time': '02:15', 'journals': ''},
+            {'category': 'Customer Service-General', 'time': '01:15', 'journals': ''},
+            {'category': 'Marketing-General', 'time': '01:20', 'journals': ''},
+          ],
+        },
+        {
+          "selectedDate": "18-12-2024",
+          "isLocked": false,
+          "categorylist": [
+            {'category': 'Admin-General', 'time': '01:15', 'journals': ''},
+            {'category': 'Academic-General', 'time': '01:20', 'journals': ''},
+            {'category': 'Customer Service-General', 'time': '1:20', 'journals': ''},
+            {'category': 'Marketing-General', 'time': '01:45', 'journals': ''},
+          ],
+        },
+      ],
+    },
+  ];
 
-  double leftHours = 0;
-  double leftMinutes = 0;
-  double leftDays = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final DateTime startDate = DateTime(2024, 12, 15);
-  final DateTime endDate = DateTime(2024, 12, 30);
   final DateTime currentDate = DateTime.now();
   DateTime selectedDate = DateTime.now();
+
+  DateTime? minStartDate;
+  DateTime? maxEndDate;
+
+  double totalHours = 0.0;
+  int totalDays = 0;
+  double leftHours = 0.0;
+  double leftDays= 0.0;
 
   @override
   void initState() {
     super.initState();
-    totalDays = _daysBetween(startDate, endDate);
-    totalHours = totalDays * 8;
-    _populateDataForDateRange();
-    _calculateLeftHours();
+    _calculateMinAndMaxDates();
+    updateTotalDaysAndHours();
   }
 
-  int _daysBetween(DateTime start, DateTime end) => end.difference(start).inDays;
+  void updateTotalDaysAndHours() {
+    int _daysBetween(DateTime start, DateTime end) => end.difference(start).inDays;
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+    try {
+      for (var range in updatedData) {
+        DateTime rangeStartDate = DateFormat('dd-MM-yyyy').parse(range['startDate']);
+        DateTime rangeEndDate = DateFormat('dd-MM-yyyy').parse(range['endDate']);
 
-  final List<Map<String, dynamic>> updatedData = [
-    {
-      'selectedDate': '19-12-2024',
-      'isLocked': false,
-      'categorylist': [
-        {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
-        {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
-        {'category': 'Customer Service-General', 'time': '0:00', 'journals': ''},
-        {'category': 'Marketing-General', 'time': '0:00', 'journals': ''},
-      ],
-    },
-    {
-      'selectedDate': '18-12-2024',
-      'isLocked': false,
-      'categorylist': [
-        {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
-        {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
-      ],
-    },
-  ];
+        int totalUsedHours = 0, totalUsedMinutes = 0;
+
+        for (var entry in range['entries']) {
+          DateTime entryDate = DateFormat('dd-MM-yyyy').parse(entry['selectedDate']);
+
+          if (entryDate.isBefore(selectedDate) || entryDate.isAtSameMomentAs(selectedDate)) {
+            for (var item in entry['categorylist']) {
+              final timeParts = item['time'].split(':');
+              if (timeParts.length == 2) {
+                totalUsedHours += int.tryParse(timeParts[0]) ?? 0;
+                totalUsedMinutes += int.tryParse(timeParts[1]) ?? 0;
+              }
+            }
+          }
+        }
+
+        totalUsedHours += totalUsedMinutes ~/ 60;
+        totalUsedMinutes %= 60;
+
+        int rangeDays = _daysBetween(rangeStartDate, rangeEndDate) + 1;
+        double rangeTotalHours = rangeDays * 8.0; // Assuming 8 hours per day
+        double remainingHours = rangeTotalHours - totalUsedHours - (totalUsedMinutes / 60.0);
+
+        setState(() {
+          range['totalDays'] = rangeDays;
+          range['totalHours'] = rangeTotalHours;
+          range['leftHours'] = double.parse(remainingHours.toStringAsFixed(2));
+          range['leftDays'] = double.parse((remainingHours / 8.0).toStringAsFixed(2));
+
+          totalDays = rangeDays;
+          totalHours = rangeTotalHours;
+          leftHours = range['leftHours'];
+          leftDays = range['leftDays'];
+        });
+        break;
+      }
+    } catch (e) {
+      print('Error in updateTotalDaysAndHours: $e');
+    }
+  }
+
+  void _calculateMinAndMaxDates() {
+    final DateFormat dateFormat = DateFormat("dd-MM-yyyy");
+
+    List<DateTime> startDates = updatedData.map((data) => dateFormat.parse(data['startDate'] as String)).toList();
+    List<DateTime> endDates = updatedData.map((data) => dateFormat.parse(data['endDate'] as String)).toList();
+
+    minStartDate = startDates.reduce((a, b) => a.isBefore(b) ? a : b);
+    maxEndDate = endDates.reduce((a, b) => a.isAfter(b) ? a : b);
+  }
+
+  bool contractExist = false;
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: startDate,
+      firstDate: minStartDate!,
       lastDate: currentDate,
     );
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
         _ensureDateExists();
-        _calculateLeftHours();
       });
     }
   }
 
   Future<void> _selectTime(BuildContext context, int index) async {
+
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: 00, minute: 00),
@@ -99,45 +186,90 @@ class _HomePageState extends State<HomePage> {
         );
 
         String formattedTime = DateFormat('HH:mm').format(newTime);
-
         String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
 
-        var dateEntry = updatedData.firstWhere(
-              (item) => item['selectedDate'] == formattedDate,
-          orElse: () {
-            updatedData.add({
-              'selectedDate': formattedDate,
-              'isLocked': false,
-              'categorylist': [
-                {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
-                {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
-                {'category': 'Fundraising-General', 'time': '0:00', 'journals': ''},
-              ],
-            });
-            return {
-              'selectedDate': formattedDate,
-              'isLocked': false,
-              'categorylist': [
-                {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
-                {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
-                {'category': 'Fundraising-General', 'time': '0:00', 'journals': ''},
-              ],
-            };
-          },
-        );
-        dateEntry['categorylist'][index]['time'] = formattedTime;
+        for (var range in updatedData) {
+          DateTime rangeStartdate = DateFormat('dd-MM-yyyy').parse(range['startDate']);
+          DateTime rangeEndDate = DateFormat('dd-MM-yyyy').parse(range['endDate']);
 
-        _calculateLeftHours();
+          if ((selectedDate.isAfter(rangeStartdate) && selectedDate.isBefore(rangeEndDate)) ||
+              selectedDate.isAtSameMomentAs(rangeStartdate) ||
+              selectedDate.isAtSameMomentAs(rangeEndDate)) {
+
+            for (var entry in range['entries']) {
+              if (entry['selectedDate'] == formattedDate) {
+                entry['categorylist'][index]['time'] = formattedTime;
+                break;
+              }
+            }
+          }
+        }
       });
     }
   }
 
-  void _populateDataForDateRange() {
-    DateTime tempDate = startDate;
-    while (tempDate.isBefore(currentDate) || tempDate.isAtSameMomentAs(currentDate)) {
-      final formattedDate = DateFormat('dd-MM-yyyy').format(tempDate);
-      if (!updatedData.any((item) => item['selectedDate'] == formattedDate)) {
+  void _ensureDateExists() {
+    bool dateExists = true;
+    for (var range in updatedData) {
+      DateTime rangeStartDate = DateFormat('dd-MM-yyyy').parse(range['startDate']);
+      DateTime rangeEndDate = DateFormat('dd-MM-yyyy').parse(range['endDate']);
+
+      if (selectedDate.isAfter(rangeStartDate) && selectedDate.isBefore(rangeEndDate) ||
+          selectedDate.isAtSameMomentAs(rangeStartDate) || selectedDate.isAtSameMomentAs(rangeEndDate)) {
+        if (range['entries'] is! List) {
+          range['entries'] = [];
+        }
+
+        bool dataExists = range['entries'].any((entry) =>
+        entry['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDate));
+
+        if (!dataExists) {
+          range['entries'].add({
+            'selectedDate': DateFormat('dd-MM-yyyy').format(selectedDate),
+            'isLocked': false,
+            'categorylist': [
+              {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
+              {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
+              {'category': 'Fundraising-General', 'time': '0:00', 'journals': ''},
+            ],
+          });
+        }
+        dateExists = false;
+        break;
+      }
+    }
+
+    setState(() {
+      contractExist = !dateExists;
+    });
+  }
+
+  Map<String, dynamic> _getSelectedDateData() {
+    String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
+
+    var entry = updatedData.firstWhere(
+          (range) {
+        DateTime rangeStartDate = DateFormat('dd-MM-yyyy').parse(range['startDate']);
+        DateTime rangeEndDate = DateFormat('dd-MM-yyyy').parse(range['endDate']);
+        DateTime currentDate = DateFormat('dd-MM-yyyy').parse(formattedDate);
+
+        return currentDate.isAfter(rangeStartDate.subtract(Duration(days: 1))) && currentDate.isBefore(rangeEndDate.add(Duration(days: 1)));
+      },
+      orElse: () {
+        String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
         updatedData.add({
+          'startDate': formattedDate,
+          'endDate': formattedDate,
+          'entries': [],
+        });
+        return updatedData.last;
+      },
+    );
+
+    return entry['entries'].firstWhere(
+          (entry) => entry['selectedDate'] == formattedDate,
+      orElse: () {
+        var newEntry = {
           'selectedDate': formattedDate,
           'isLocked': false,
           'categorylist': [
@@ -145,67 +277,16 @@ class _HomePageState extends State<HomePage> {
             {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
             {'category': 'Fundraising-General', 'time': '0:00', 'journals': ''},
           ],
-        });
-      }
-      tempDate = tempDate.add(const Duration(days: 1));
-    }
-  }
-
-  void _calculateLeftHours() {
-    int totalUsedHours = 0, totalUsedMinutes = 0;
-
-    for (var entry in updatedData) {
-      final entryDate = DateFormat('dd-MM-yyyy').parse(entry['selectedDate']);
-      if (entryDate.isBefore(currentDate) || entryDate.isAtSameMomentAs(currentDate)) {
-        for (var item in entry['categorylist']) {
-          final timeParts = item['time'].split(':');
-          totalUsedHours += int.parse(timeParts[0]);
-          totalUsedMinutes += int.parse(timeParts[1]);
-        }
-      }
-    }
-
-    totalUsedHours += totalUsedMinutes ~/ 60;
-    totalUsedMinutes %= 60;
-
-    double remainingHours = totalHours - totalUsedHours - (totalUsedMinutes / 60);
-
-    setState(() {
-      leftHours = double.parse(remainingHours.toStringAsFixed(2));
-      leftMinutes = (60 - totalUsedMinutes) % 60;
-      leftDays = double.parse(((remainingHours) / 8).toStringAsFixed(2));
-      print('leftHours: $leftHours  leftDays: $leftDays');
-    });
-  }
-
-  void _ensureDateExists() {
-    String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
-    if (!updatedData.any((item) => item['selectedDate'] == formattedDate)) {
-      updatedData.add({
-        'selectedDate': formattedDate,
-        'isLocked': false,
-        'categorylist': [
-          {'category': 'Admin-General', 'time': '0:00', 'journals': ''},
-          {'category': 'Academic-General', 'time': '0:00', 'journals': ''},
-          {'category': 'Fundraising-General', 'time': '0:00', 'journals': ''},
-        ],
-      });
-    }
-  }
-
-  Map<String, dynamic> _getSelectedDateData() {
-    String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
-    return updatedData.firstWhere(
-          (item) => item['selectedDate'] == formattedDate,
-      orElse: () => {
-        'selectedDate': formattedDate,
-        'isLocked': false,
-        'categorylist': [],
+        };
+        entry['entries'].add(newEntry);
+        return newEntry;
       },
     );
   }
 
   void _navigateToJournalScreen(BuildContext context, int index, String category, String initialJournalText) async {
+    final DateTime selectedDateTime = selectedDate;
+
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -215,8 +296,25 @@ class _HomePageState extends State<HomePage> {
           initialJournalText: initialJournalText,
           onJournalUpdate: (updatedText) {
             setState(() {
-              updatedData.firstWhere((item) => item['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDate))
-              ['categorylist'][index]['journals'] = updatedText;
+              for (var dateRange in updatedData) {
+                final DateTime startDateTime = DateFormat('dd-MM-yyyy').parse(dateRange['startDate']);
+                final DateTime endDateTime = DateFormat('dd-MM-yyyy').parse(dateRange['endDate']);
+
+                if (startDateTime.isBefore(selectedDateTime) || startDateTime.isAtSameMomentAs(selectedDateTime)) {
+                  if (endDateTime.isAfter(selectedDateTime) || endDateTime.isAtSameMomentAs(selectedDateTime)) {
+                    for (var entry in dateRange['entries']) {
+                      if (entry['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDateTime)) {
+                        for (var categoryObj in entry['categorylist']) {
+                          if (categoryObj['category'] == category) {
+                            categoryObj['journals'] = updatedText;
+                            break;
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             });
           },
         ),
@@ -238,6 +336,23 @@ class _HomePageState extends State<HomePage> {
   ];
 
   void _showCategoryBottomSheet(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('No Contract'),
+            content: Text('No valid contract exists for the selected date.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+    );
 
     Map<String, bool> checkboxStates = {};
 
@@ -351,10 +466,6 @@ class _HomePageState extends State<HomePage> {
   @override
 
   Widget build(BuildContext context) {
-    _ensureDateExists();
-    var selectedDateData = _getSelectedDateData();
-    final isLocked = selectedDateData['isLocked'] ?? false;
-
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -385,16 +496,16 @@ class _HomePageState extends State<HomePage> {
                   icon: Icon(Icons.arrow_back_ios, color: Colors.white),
                   onPressed: () {
                     setState(() {
-                      if (selectedDate.subtract(Duration(days: 1)).isAfter(startDate)) {
+                      if (selectedDate.subtract(Duration(days: 1)).isAfter(minStartDate!)) {
                         selectedDate = selectedDate.subtract(Duration(days: 1));
                         _ensureDateExists();
-                        print('hehe: $updatedData');
+                        updateTotalDaysAndHours();
                       }
                     });
                   },
                 ),
                 InkWell(
-                  onTap: () => _selectDate(context),
+                  onTap: () =>_selectDate(context),
                   child: Text(
                     DateFormat('EEE, dd MMM yyyy').format(selectedDate),
                     style: TextStyle(
@@ -412,6 +523,7 @@ class _HomePageState extends State<HomePage> {
                           DateTime(currentDate.year, currentDate.month, currentDate.day + 1))) {
                         selectedDate = selectedDate.add(Duration(days: 1));
                         _ensureDateExists();
+                        updateTotalDaysAndHours();
                       }
                     });
                   },
@@ -419,37 +531,68 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          SizedBoxHeight10,
-          DisplayCategoryList(
-            selectedDateData: _getSelectedDateData(),
-            showCategoryBottomSheet: _showCategoryBottomSheet,
-            selectTime: _selectTime,
-            calculateLeftHours: _calculateLeftHours,
-            navigateToJournalScreen: _navigateToJournalScreen,
-          ),
-          LockAndSaving(
-            selectedDateData: _getSelectedDateData(),
-            onSave: () {
-              String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
-              print("Data saved for $formattedDate");
-            },
-            onLock: () {
-              setState(() {
+          if (!contractExist) NoContractPage(),
+          if(contractExist) ...[
+            SizedBoxHeight10,
+            DisplayCategoryList(
+              selectedDateData: _getSelectedDateData(),
+              showCategoryBottomSheet: _showCategoryBottomSheet,
+              selectTime: _selectTime,
+              navigateToJournalScreen: _navigateToJournalScreen,
+            ),
+            LockAndSaving(
+              selectedDateData: _getSelectedDateData(),
+              onSave: () {
                 String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
-                var dateEntry = updatedData.firstWhere(
-                      (item) => item['selectedDate'] == formattedDate,
-                );
-                if (dateEntry != null) {
-                  dateEntry['isLocked'] = true;
-                  print("Date $formattedDate is locked.");
-                }
-              });
-            },
-          ),
-          DisplayBottomDateAndHour(totalHours: totalHours,totalDays : totalDays, leftHours: leftHours, leftDays: leftDays),
+                print("Data saved for $formattedDate");
+              },
+              onLock: () {
+                final DateTime selectedDateTime = selectedDate;
+                setState(() {
+                  for (var dateRange in updatedData) {
+                    final DateTime startDateTime = DateFormat('dd-MM-yyyy').parse(dateRange['startDate']);
+                    final DateTime endDateTime = DateFormat('dd-MM-yyyy').parse(dateRange['endDate']);
+
+                    if (startDateTime.isBefore(selectedDateTime) || startDateTime.isAtSameMomentAs(selectedDateTime)) {
+                      if (endDateTime.isAfter(selectedDateTime) || endDateTime.isAtSameMomentAs(selectedDateTime)) {
+                        for (var entry in dateRange['entries']) {
+                          if (entry['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDateTime)) {
+                            entry['isLocked'] = true;
+                          }
+                        }
+                      }
+                    }
+                  }
+                });
+              },
+            ),
+            DisplayBottomDateAndHour(totalHours: totalHours,totalDays : totalDays, leftHours: leftHours, leftDays: leftDays),
+          ]
         ],
       ),
     );
   }
 }
+
+class NoContractPage extends StatelessWidget {
+  const NoContractPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(height: MediaQuery.sizeOf(context).height*0.40),
+        Text(
+          'No Contract Exist on this date',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w400,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 

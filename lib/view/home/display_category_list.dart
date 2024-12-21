@@ -4,14 +4,12 @@ class DisplayCategoryList extends StatefulWidget {
   final Map<String, dynamic> selectedDateData;
   final Function(BuildContext) showCategoryBottomSheet;
   final Future<void> Function(BuildContext, int) selectTime;
-  final Function calculateLeftHours;
   final Function(BuildContext, int, String, String) navigateToJournalScreen;
 
   DisplayCategoryList({
     required this.selectedDateData,
     required this.showCategoryBottomSheet,
     required this.selectTime,
-    required this.calculateLeftHours,
     required this.navigateToJournalScreen,
   });
 
@@ -24,7 +22,6 @@ class _DisplayCategoryListState extends State<DisplayCategoryList> {
   Widget build(BuildContext context) {
     final selectedDateData = widget.selectedDateData;
     final isLocked = selectedDateData['isLocked'] ?? false;
-    final categoryList = selectedDateData['categorylist'] ?? [];
 
     return Expanded(
       child: ListView.builder(
@@ -86,7 +83,7 @@ class _DisplayCategoryListState extends State<DisplayCategoryList> {
                     setState(() {
                       if (selectedDateData['isLocked'] == false) {
                         widget.selectTime(context, index);
-                        widget.calculateLeftHours();
+                        //widget.calculateLeftHours();
                       }
                     })
                   },

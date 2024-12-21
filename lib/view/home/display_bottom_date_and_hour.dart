@@ -64,6 +64,33 @@ class DisplayBottomDateAndHour extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total Days:',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              Text(
+                                '$totalDays',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 14),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Left Days:',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              Text(
+                                '$leftDays',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                           SizedBox(height: 16),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -93,34 +120,6 @@ class DisplayBottomDateAndHour extends StatelessWidget {
                             ],
                           ),
                           SizedBox(height: 14),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Total Days:',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                '$totalDays',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 14),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Left Days:',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                '$leftDays',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 16),
                         ],
                       ),
                     ),
