@@ -28,27 +28,37 @@ class _HomePageState extends State<HomePage> {
       "leftHours": 0.0,
       "entries": [
         {
+          "selectedDate": "05-12-2024",
+          "isLocked": false,
+          "categorylist": [
+            {'category': 'Admin-General', 'time': '8:15', 'journals': ''},
+            {'category': 'Academic-General', 'time': '8:30', 'journals': ''},
+            {'category': 'Customer Service-General', 'time': '8:15', 'journals': ''},
+            {'category': 'Marketing-General', 'time': '1:15', 'journals': ''},
+          ],
+        },
+        {
           "selectedDate": "03-12-2024",
           "isLocked": false,
           "categorylist": [
-            {'category': 'Admin-General', 'time': '1:15', 'journals': ''},
-            {'category': 'Academic-General', 'time': '1:30', 'journals': ''},
-            {'category': 'Customer Service-General', 'time': '2:15', 'journals': ''},
-            {'category': 'Marketing-General', 'time': '1:15', 'journals': ''},
+            {'category': 'Admin-General', 'time': '01:10', 'journals': ''},
+            {'category': 'Academic-General', 'time': '01:00', 'journals': ''},
+            {'category': 'Customer Service-General', 'time': '01:15', 'journals': ''},
+            {'category': 'Marketing-General', 'time': '01:20', 'journals': ''},
           ],
         },
       ],
     },
     {
       "startDate": "15-12-2024",
-      "endDate": "19-12-2024",
+      "endDate": "30-12-2024",
       "totalDays": 0,
       "leftDays" : 0.0,
       "totalHours": 0.0,
       "leftHours": 0.0,
       "entries": [
         {
-          "selectedDate": "17-12-2024",
+          "selectedDate": "20-12-2024",
           "isLocked": false,
           "categorylist": [
             {'category': 'Admin-General', 'time': '02:25', 'journals': ''},
@@ -58,7 +68,7 @@ class _HomePageState extends State<HomePage> {
           ],
         },
         {
-          "selectedDate": "18-12-2024",
+          "selectedDate": "19-12-2024",
           "isLocked": false,
           "categorylist": [
             {'category': 'Admin-General', 'time': '01:15', 'journals': ''},
@@ -74,21 +84,25 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final DateTime currentDate = DateTime.now();
-  DateTime selectedDate = DateTime.now();
+  late DateTime selectedDate;
 
   DateTime? minStartDate;
   DateTime? maxEndDate;
 
-  double totalHours = 0.0;
-  int totalDays = 0;
-  double leftHours = 0.0;
-  double leftDays= 0.0;
+  double totalHours = 0.0 ;
+  int totalDays = 0 ;
+  double leftHours = 0.0 ;
+  double leftDays= 0.0 ;
+
+  bool contractExist = false ;
 
   @override
   void initState() {
     super.initState();
+    selectedDate = DateTime(currentDate.year, currentDate.month, currentDate.day);
     _calculateMinAndMaxDates();
     updateTotalDaysAndHours();
+    _ensureDateExists();
   }
 
   void updateTotalDaysAndHours() {
@@ -99,27 +113,24 @@ class _HomePageState extends State<HomePage> {
         DateTime rangeStartDate = DateFormat('dd-MM-yyyy').parse(range['startDate']);
         DateTime rangeEndDate = DateFormat('dd-MM-yyyy').parse(range['endDate']);
 
-        int totalUsedHours = 0, totalUsedMinutes = 0;
+        int totalUsedMinutes = 0;
 
         for (var entry in range['entries']) {
-          DateTime entryDate = DateFormat('dd-MM-yyyy').parse(entry['selectedDate']);
 
-          if (entryDate.isBefore(selectedDate) || entryDate.isAtSameMomentAs(selectedDate)) {
-            for (var item in entry['categorylist']) {
-              final timeParts = item['time'].split(':');
-              if (timeParts.length == 2) {
-                totalUsedHours += int.tryParse(timeParts[0]) ?? 0;
-                totalUsedMinutes += int.tryParse(timeParts[1]) ?? 0;
-              }
+          for (var item in entry['categorylist']) {
+            final timeParts = item['time'].split(':');
+            if (timeParts.length == 2) {
+              totalUsedMinutes += (int.tryParse(timeParts[0]) ?? 0) * 60;
+              totalUsedMinutes += int.tryParse(timeParts[1]) ?? 0;
             }
           }
         }
 
-        totalUsedHours += totalUsedMinutes ~/ 60;
+        int totalUsedHours = totalUsedMinutes ~/ 60;
         totalUsedMinutes %= 60;
 
-        int rangeDays = _daysBetween(rangeStartDate, rangeEndDate) + 1;
-        double rangeTotalHours = rangeDays * 8.0; // Assuming 8 hours per day
+        int rangeDays = _daysBetween(rangeStartDate, rangeEndDate)+1;
+        double rangeTotalHours = rangeDays * 8.0;
         double remainingHours = rangeTotalHours - totalUsedHours - (totalUsedMinutes / 60.0);
 
         setState(() {
@@ -128,13 +139,44 @@ class _HomePageState extends State<HomePage> {
           range['leftHours'] = double.parse(remainingHours.toStringAsFixed(2));
           range['leftDays'] = double.parse((remainingHours / 8.0).toStringAsFixed(2));
 
-          totalDays = rangeDays;
-          totalHours = rangeTotalHours;
-          leftHours = range['leftHours'];
-          leftDays = range['leftDays'];
         });
-        break;
       }
+
+      bool dateInRange = false;
+
+      for (var range in updatedData) {
+        DateTime rangeStartDate = DateFormat('dd-MM-yyyy').parse(range['startDate']);
+        DateTime rangeEndDate = DateFormat('dd-MM-yyyy').parse(range['endDate']);
+
+        if (selectedDate.isAfter(rangeStartDate) &&
+            selectedDate.isBefore(rangeEndDate) || selectedDate.isAtSameMomentAs(rangeEndDate) || selectedDate.isAtSameMomentAs(rangeStartDate)) {
+          dateInRange = true;
+
+          setState(() {
+            totalDays = range['totalDays'];
+            totalHours = range['totalHours'];
+            leftHours = range['leftHours'];
+            leftDays = range['leftDays'];
+          });
+
+          print(
+              'For selectedDate $selectedDate: totalDays = $totalDays, leftDays = $leftDays, totalHours = $totalHours, leftHours = $leftHours');
+          break;
+        }
+      }
+
+      if (!dateInRange) {
+        // Reset state if no range matches
+        setState(() {
+          totalDays = 0;
+          totalHours = 0.0;
+          leftHours = 0.0;
+          leftDays = 0.0;
+        });
+
+        print('No matching range found for selectedDate $selectedDate');
+      }
+
     } catch (e) {
       print('Error in updateTotalDaysAndHours: $e');
     }
@@ -150,8 +192,6 @@ class _HomePageState extends State<HomePage> {
     maxEndDate = endDates.reduce((a, b) => a.isAfter(b) ? a : b);
   }
 
-  bool contractExist = false;
-
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -163,6 +203,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         selectedDate = picked;
         _ensureDateExists();
+        updateTotalDaysAndHours();
       });
     }
   }
@@ -204,6 +245,7 @@ class _HomePageState extends State<HomePage> {
             }
           }
         }
+        updateTotalDaysAndHours();
       });
     }
   }
@@ -339,19 +381,19 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('No Contract'),
-            content: Text('No valid contract exists for the selected date.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
+        return AlertDialog(
+          title: Text('No Contract'),
+          content: Text('No valid contract exists for the selected date.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
     );
 
     Map<String, bool> checkboxStates = {};
@@ -467,7 +509,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
+    key: _scaffoldKey,
       appBar: AppBar(
         backgroundColor: Colors.black,
         leading: IconButton(
@@ -496,8 +538,9 @@ class _HomePageState extends State<HomePage> {
                   icon: Icon(Icons.arrow_back_ios, color: Colors.white),
                   onPressed: () {
                     setState(() {
-                      if (selectedDate.subtract(Duration(days: 1)).isAfter(minStartDate!)) {
+                      if (selectedDate.isAfter(minStartDate!)) {
                         selectedDate = selectedDate.subtract(Duration(days: 1));
+                        print('After Subtraction: $selectedDate');
                         _ensureDateExists();
                         updateTotalDaysAndHours();
                       }
@@ -594,5 +637,4 @@ class NoContractPage extends StatelessWidget {
     );
   }
 }
-
 
