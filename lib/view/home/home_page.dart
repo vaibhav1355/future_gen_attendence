@@ -8,6 +8,7 @@ import '../../Constants/constants.dart';
 
 import 'display_category_list.dart';
 import 'locking_and_saving.dart';
+import 'no_contract_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,14 +27,15 @@ class _HomePageState extends State<HomePage> {
       "leftDays" : 0.0,
       "totalHours": 0.0,
       "leftHours": 0.0,
+      "pastContract": false,
       "entries": [
         {
           "selectedDate": "05-12-2024",
           "isLocked": false,
           "categorylist": [
-            {'category': 'Admin-General', 'time': '8:15', 'journals': ''},
-            {'category': 'Academic-General', 'time': '8:30', 'journals': ''},
-            {'category': 'Customer Service-General', 'time': '8:15', 'journals': ''},
+            {'category': 'Admin-General', 'time': '2:15', 'journals': ''},
+            {'category': 'Academic-General', 'time': '2:30', 'journals': ''},
+            {'category': 'Customer Service-General', 'time': '2:15', 'journals': ''},
             {'category': 'Marketing-General', 'time': '1:15', 'journals': ''},
           ],
         },
@@ -56,6 +58,7 @@ class _HomePageState extends State<HomePage> {
       "leftDays" : 0.0,
       "totalHours": 0.0,
       "leftHours": 0.0,
+      "pastContract": false,
       "entries": [
         {
           "selectedDate": "20-12-2024",
@@ -95,6 +98,7 @@ class _HomePageState extends State<HomePage> {
   double leftDays= 0.0 ;
 
   bool contractExist = false ;
+  bool isPastContract = false;
 
   @override
   void initState() {
@@ -103,6 +107,7 @@ class _HomePageState extends State<HomePage> {
     _calculateMinAndMaxDates();
     updateTotalDaysAndHours();
     _ensureDateExists();
+    _pastContract();
   }
 
   void updateTotalDaysAndHours() {
@@ -190,6 +195,30 @@ class _HomePageState extends State<HomePage> {
 
     minStartDate = startDates.reduce((a, b) => a.isBefore(b) ? a : b);
     maxEndDate = endDates.reduce((a, b) => a.isAfter(b) ? a : b);
+  }
+
+  void _pastContract() {
+    final DateFormat dateFormat = DateFormat("dd-MM-yyyy");
+
+    for (var range in updatedData) {
+      try {
+        DateTime rangeEndDate = dateFormat.parse(range['endDate'] as String);
+
+        if (selectedDate.isAfter(rangeEndDate)) {
+          setState(() {
+            range['pastContract'] = true;
+          });
+        } else {
+          setState(() {
+            range['pastContract'] = false;
+          });
+        }
+      } catch (e) {
+        print('Error parsing date in _pastContract: $e');
+      }
+    }
+
+    print('Updated updatedData: $updatedData');
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -378,28 +407,11 @@ class _HomePageState extends State<HomePage> {
   ];
 
   void _showCategoryBottomSheet(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('No Contract'),
-          content: Text('No valid contract exists for the selected date.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-
     Map<String, bool> checkboxStates = {};
 
     var selectedDateData = _getSelectedDateData();
 
+    // Initialize checkbox states
     selectedDateData['categorylist'].forEach((item) {
       checkboxStates[item['category']] = true;
     });
@@ -476,6 +488,11 @@ class _HomePageState extends State<HomePage> {
                       itemBuilder: (context, index) {
                         String category = categories[index];
                         bool isChecked = checkboxStates[category] ?? false;
+
+                        // Check if the category is already selected
+                        bool isAlreadySelected = selectedDateData['categorylist']
+                            .any((item) => item['category'] == category);
+
                         return Column(
                           children: [
                             CheckboxListTile(
@@ -483,6 +500,10 @@ class _HomePageState extends State<HomePage> {
                               value: isChecked,
                               onChanged: (bool? value) {
                                 setState(() {
+                                  if (isAlreadySelected && !(value ?? false)) {
+                                    // Prevent unchecking already selected categories
+                                    return;
+                                  }
                                   checkboxStates[category] = value ?? false;
                                 });
                               },
@@ -617,24 +638,5 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class NoContractPage extends StatelessWidget {
-  const NoContractPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(height: MediaQuery.sizeOf(context).height*0.40),
-        Text(
-          'No Contract Exist on this date',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-            color: Colors.grey,
-          ),
-        ),
-      ],
-    );
-  }
-}
 
