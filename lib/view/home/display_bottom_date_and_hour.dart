@@ -115,7 +115,7 @@ class DisplayBottomDateAndHour extends StatelessWidget {
                                 style: TextStyle(fontSize: 16),
                               ),
                               Text(
-                                leftMinutes < 10 ? '$leftHours.0$leftMinutes' : '$leftHours.$leftMinutes',
+                                leftMinutes < 10 ? '$leftHours.0$leftMinutes' : 'H- $leftHours.$leftMinutes',
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                             ],

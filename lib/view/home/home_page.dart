@@ -103,6 +103,7 @@ class _HomePageState extends State<HomePage> {
 
   bool contractExist = false ;
   bool isPastContract = false;
+  bool isLocked = false;
 
   @override
   void initState() {
@@ -255,21 +256,25 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _selectTime(BuildContext context, int index) async {
-
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: 00, minute: 00),
       initialEntryMode: TimePickerEntryMode.dial,
     );
 
-
     if (picked != null) {
       setState(() {
+        // Adjust if time is 00:00
+        int hour = picked.hour;
+        if (hour == 0) {
+          hour = 12; // Set 00:00 to 12:00
+        }
+
         final newTime = DateTime(
           selectedDate.year,
           selectedDate.month,
           selectedDate.day,
-          picked.hour,
+          hour,
           picked.minute,
         );
 
@@ -522,7 +527,10 @@ class _HomePageState extends State<HomePage> {
                       if (endDateTime.isAfter(selectedDateTime) || endDateTime.isAtSameMomentAs(selectedDateTime)) {
                         for (var entry in dateRange['entries']) {
                           if (entry['selectedDate'] == DateFormat('dd-MM-yyyy').format(selectedDateTime)) {
-                            entry['isLocked'] = true;
+                            setState(() {
+                              entry['isLocked'] = true;
+                              isLocked = true;
+                            });
                           }
                         }
                       }
