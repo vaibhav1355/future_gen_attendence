@@ -5,12 +5,14 @@ class JournalScreen extends StatefulWidget {
   final String category;
   final String initialJournalText;
   final Function(String) onJournalUpdate;
+  final bool isPastContract;
 
   JournalScreen({
     required this.index,
     required this.category,
     required this.initialJournalText,
     required this.onJournalUpdate,
+    required this.isPastContract,
   });
 
   @override
@@ -53,6 +55,7 @@ class _JournalScreenState extends State<JournalScreen> {
             SizedBox(height: 16),
             TextField(
               controller: _journalController,
+              enabled: !widget.isPastContract,
               autofocus: true,
               decoration: InputDecoration(
                 hintText: "Enter your journal entry here...",

@@ -5,12 +5,14 @@ class DisplayCategoryList extends StatefulWidget {
   final Function(BuildContext) showCategoryBottomSheet;
   final Future<void> Function(BuildContext, int) selectTime;
   final Function(BuildContext, int, String, String) navigateToJournalScreen;
+  final bool isPastContract ;
 
   DisplayCategoryList({
     required this.selectedDateData,
     required this.showCategoryBottomSheet,
     required this.selectTime,
     required this.navigateToJournalScreen,
+    required this.isPastContract,
   });
 
   @override
@@ -25,22 +27,23 @@ class _DisplayCategoryListState extends State<DisplayCategoryList> {
 
     return Expanded(
       child: ListView.builder(
-        itemCount: selectedDateData['categorylist'].length + 1,
+        itemCount: widget.isPastContract
+            ? selectedDateData['categorylist'].length + 1
+            : selectedDateData['categorylist'].length,
         itemBuilder: (context, index) {
-          if (index == selectedDateData['categorylist'].length) {
+          // Handle "Add Item" for past contracts
+          if (index == selectedDateData['categorylist'].length && widget.isPastContract) {
             return Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.only(top: 4, left: 20.0, bottom: 4),
+                  padding: const EdgeInsets.only(top: 4, left: 20.0, bottom: 4),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: InkWell(
                       onTap: () {
-                        setState(() {
-                          if (selectedDateData['isLocked'] == false) {
-                            widget.showCategoryBottomSheet(context);
-                          }
-                        });
+                        if (!isLocked) {
+                          widget.showCategoryBottomSheet(context);
+                        }
                       },
                       child: Image.asset(
                         'assets/images/add_img.png',
@@ -56,18 +59,20 @@ class _DisplayCategoryListState extends State<DisplayCategoryList> {
               ],
             );
           }
+
+          // Handle regular category list items
           final item = selectedDateData['categorylist'][index];
           return Column(
             children: [
               ListTile(
-                contentPadding: EdgeInsets.only(left: 30, top: 8, bottom: 8, right: 10),
+                contentPadding: const EdgeInsets.only(left: 30, top: 8, bottom: 8, right: 10),
                 leading: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 6.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 6.0),
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width * 0.29,
                     child: Text(
                       item['category'],
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.grey,
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
@@ -78,58 +83,55 @@ class _DisplayCategoryListState extends State<DisplayCategoryList> {
                   ),
                 ),
                 title: InkWell(
-                  onTap: () =>
-                  {
-                    setState(() {
-                      if (selectedDateData['isLocked'] == false) {
-                        widget.selectTime(context, index);
-                        //widget.calculateLeftHours();
-                      }
-                    })
+                  onTap: () {
+                    if (!isLocked && widget.isPastContract) {
+                      widget.selectTime(context, index);
+                    }
                   },
                   child: Row(
                     children: [
-                      SizedBox(width: 10, height: 50),
+                      const SizedBox(width: 10, height: 50),
                       Flexible(
                         child: Text(
                           item['time'],
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 20,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
-                      SizedBox(width: 25, height: 25),
+                      const SizedBox(width: 25, height: 25),
                       Image.asset(
                         'assets/images/caret_arrow_up.png',
                         height: 20,
                         width: 20,
                         semanticLabel: "Select time",
                       ),
-                      SizedBox(width: 5, height: 5),
+                      const SizedBox(width: 5, height: 5),
                     ],
                   ),
                 ),
                 trailing: ElevatedButton(
                   onPressed: () {
-                    if(!isLocked)
+                    if (!isLocked) {
                       widget.navigateToJournalScreen(
                         context,
                         index,
                         item['category'],
                         item['journals'],
                       );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xffefcd1a),
+                    backgroundColor: const Color(0xffefcd1a),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(32.0),
                     ),
-                    padding: EdgeInsets.all(12),
-                    minimumSize: Size(110, 38),
+                    padding: const EdgeInsets.all(12),
+                    minimumSize: const Size(110, 38),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Journal',
                     style: TextStyle(
                       fontSize: 16,

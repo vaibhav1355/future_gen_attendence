@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:futuregen_attendance/view/drawer/app_drawer.dart';
 import 'package:futuregen_attendance/view/home/display_bottom_date_and_hour.dart';
 import 'package:futuregen_attendance/view/home/journal.dart';
+import 'package:futuregen_attendance/view/home/show_category_bottom_sheet.dart';
 import 'package:intl/intl.dart';
 
 import '../../Constants/constants.dart';
@@ -25,28 +26,29 @@ class _HomePageState extends State<HomePage> {
       "endDate": "05-12-2024",
       "totalDays": 0,
       "leftDays" : 0.0,
-      "totalHours": 0.0,
-      "leftHours": 0.0,
+      "totalHours": 0,
+      "leftHours": 0,
+      "leftMinutes" : 0,
       "pastContract": false,
       "entries": [
         {
           "selectedDate": "05-12-2024",
           "isLocked": false,
           "categorylist": [
-            {'category': 'Admin-General', 'time': '2:15', 'journals': ''},
-            {'category': 'Academic-General', 'time': '2:30', 'journals': ''},
-            {'category': 'Customer Service-General', 'time': '2:15', 'journals': ''},
-            {'category': 'Marketing-General', 'time': '1:15', 'journals': ''},
+            {'category': 'Admin-General', 'time': '2:00', 'journals': 'yeh pehla se likha hoya h Sir Ji '},
+            {'category': 'Academic-General', 'time': '2:00', 'journals': 'systummmmm '},
+            {'category': 'Customer Service-General', 'time': '2:00', 'journals': 'jai baba ki'},
+            {'category': 'Marketing-General', 'time': '2:00', 'journals': ''},
           ],
         },
         {
           "selectedDate": "03-12-2024",
           "isLocked": false,
           "categorylist": [
-            {'category': 'Admin-General', 'time': '01:10', 'journals': ''},
-            {'category': 'Academic-General', 'time': '01:00', 'journals': ''},
-            {'category': 'Customer Service-General', 'time': '01:15', 'journals': ''},
-            {'category': 'Marketing-General', 'time': '01:20', 'journals': ''},
+            {'category': 'Admin-General', 'time': '01:55', 'journals': 'yeh pehla se likha hoya h Sir Ji'},
+            {'category': 'Academic-General', 'time': '01:00', 'journals': 'systummmmm'},
+            {'category': 'Customer Service-General', 'time': '01:00', 'journals': 'JAI SHREE RAM!'},
+            {'category': 'Marketing-General', 'time': '01:00', 'journals': 'systummmm!!'},
           ],
         },
       ],
@@ -56,8 +58,9 @@ class _HomePageState extends State<HomePage> {
       "endDate": "30-12-2024",
       "totalDays": 0,
       "leftDays" : 0.0,
-      "totalHours": 0.0,
-      "leftHours": 0.0,
+      "totalHours": 0,
+      "leftHours": 0,
+      "leftMinutes" : 0,
       "pastContract": false,
       "entries": [
         {
@@ -92,9 +95,10 @@ class _HomePageState extends State<HomePage> {
   DateTime? minStartDate;
   DateTime? maxEndDate;
 
-  double totalHours = 0.0 ;
+  int totalHours = 0 ;
   int totalDays = 0 ;
-  double leftHours = 0.0 ;
+  int leftHours = 0 ;
+  int leftMinutes = 0;
   double leftDays= 0.0 ;
 
   bool contractExist = false ;
@@ -121,7 +125,6 @@ class _HomePageState extends State<HomePage> {
         int totalUsedMinutes = 0;
 
         for (var entry in range['entries']) {
-
           for (var item in entry['categorylist']) {
             final timeParts = item['time'].split(':');
             if (timeParts.length == 2) {
@@ -134,16 +137,24 @@ class _HomePageState extends State<HomePage> {
         int totalUsedHours = totalUsedMinutes ~/ 60;
         totalUsedMinutes %= 60;
 
-        int rangeDays = _daysBetween(rangeStartDate, rangeEndDate)+1;
-        double rangeTotalHours = rangeDays * 8.0;
-        double remainingHours = rangeTotalHours - totalUsedHours - (totalUsedMinutes / 60.0);
+        int rangeDays = _daysBetween(rangeStartDate, rangeEndDate) + 1; // totaldays
+
+        int rangeTotalMinutes = rangeDays * 8 * 60;
+        int remainingMinutes = rangeTotalMinutes - ( (totalUsedHours * 60)+ totalUsedMinutes);
+
+        double remainingHours = remainingMinutes / 60.0;
+
+        int finalRemainingMinutes = remainingMinutes % 60;
+        String formattedMinutes = finalRemainingMinutes < 10
+            ? '0$finalRemainingMinutes'
+            : '$finalRemainingMinutes';
 
         setState(() {
           range['totalDays'] = rangeDays;
-          range['totalHours'] = rangeTotalHours;
-          range['leftHours'] = double.parse(remainingHours.toStringAsFixed(2));
+          range['totalHours'] = rangeTotalMinutes ~/ 60;
+          range['leftHours'] = remainingHours.floor();
+          range['leftMinutes'] = remainingMinutes % 60;
           range['leftDays'] = double.parse((remainingHours / 8.0).toStringAsFixed(2));
-
         });
       }
 
@@ -161,6 +172,7 @@ class _HomePageState extends State<HomePage> {
             totalDays = range['totalDays'];
             totalHours = range['totalHours'];
             leftHours = range['leftHours'];
+            leftMinutes = range['leftMinutes'];
             leftDays = range['leftDays'];
           });
 
@@ -174,8 +186,9 @@ class _HomePageState extends State<HomePage> {
         // Reset state if no range matches
         setState(() {
           totalDays = 0;
-          totalHours = 0.0;
-          leftHours = 0.0;
+          totalHours = 0;
+          leftHours = 0;
+          leftMinutes = 0;
           leftDays = 0.0;
         });
 
@@ -200,25 +213,28 @@ class _HomePageState extends State<HomePage> {
   void _pastContract() {
     final DateFormat dateFormat = DateFormat("dd-MM-yyyy");
 
+    bool isDateInPastContract = false;
+
     for (var range in updatedData) {
       try {
         DateTime rangeEndDate = dateFormat.parse(range['endDate'] as String);
 
         if (selectedDate.isAfter(rangeEndDate)) {
-          setState(() {
-            range['pastContract'] = true;
-          });
+          isDateInPastContract = true;
+          range['pastContract'] = true;
         } else {
-          setState(() {
-            range['pastContract'] = false;
-          });
+          range['pastContract'] = false;
         }
       } catch (e) {
         print('Error parsing date in _pastContract: $e');
       }
     }
 
-    print('Updated updatedData: $updatedData');
+    setState(() {
+      isPastContract = isDateInPastContract;
+    });
+
+    print('Updated updatedData with pastContract: $updatedData');
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -233,6 +249,7 @@ class _HomePageState extends State<HomePage> {
         selectedDate = picked;
         _ensureDateExists();
         updateTotalDaysAndHours();
+        _pastContract();
       });
     }
   }
@@ -244,6 +261,7 @@ class _HomePageState extends State<HomePage> {
       initialTime: TimeOfDay(hour: 00, minute: 00),
       initialEntryMode: TimePickerEntryMode.dial,
     );
+
 
     if (picked != null) {
       setState(() {
@@ -365,6 +383,7 @@ class _HomePageState extends State<HomePage> {
           index: index,
           category: category,
           initialJournalText: initialJournalText,
+          isPastContract: !isPastContract,
           onJournalUpdate: (updatedText) {
             setState(() {
               for (var dateRange in updatedData) {
@@ -393,137 +412,16 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  final List<String> categories = [
-    'Admin-General',
-    'Academic-General',
-    'Fundraising-General',
-    'Marketing-General',
-    'Operations-General',
-    'Finance-General',
-    'HR-General',
-    'Research-General',
-    'Event Management-General',
-    'Customer Service-General',
-  ];
-
   void _showCategoryBottomSheet(BuildContext context) {
-    Map<String, bool> checkboxStates = {};
-
     var selectedDateData = _getSelectedDateData();
 
-    // Initialize checkbox states
-    selectedDateData['categorylist'].forEach((item) {
-      checkboxStates[item['category']] = true;
-    });
-
-    showModalBottomSheet(
+    CategoryBottomSheet.showCategoryBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return Padding(
-              padding: EdgeInsets.all(4.0),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(left: 20, right: 20, top: 30, bottom: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              'Cancel',
-                              style: TextStyle(
-                                color: Color(0xff6C60FF),
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              categories.forEach((category) {
-                                if (checkboxStates[category] == true) {
-                                  bool isAlreadySelected = selectedDateData['categorylist']
-                                      .any((item) => item['category'] == category);
-
-                                  if (!isAlreadySelected) {
-                                    selectedDateData['categorylist'].add({
-                                      'category': category,
-                                      'time': '00:00',
-                                      'journals': '',
-                                    });
-                                  }
-                                }
-                              });
-                            });
-                            Navigator.pop(context);
-                          },
-                          child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              'Add Category',
-                              style: TextStyle(
-                                color: Color(0xff6C60FF),
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Divider(),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: categories.length,
-                      itemBuilder: (context, index) {
-                        String category = categories[index];
-                        bool isChecked = checkboxStates[category] ?? false;
-
-                        // Check if the category is already selected
-                        bool isAlreadySelected = selectedDateData['categorylist']
-                            .any((item) => item['category'] == category);
-
-                        return Column(
-                          children: [
-                            CheckboxListTile(
-                              title: Text(category),
-                              value: isChecked,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  if (isAlreadySelected && !(value ?? false)) {
-                                    // Prevent unchecking already selected categories
-                                    return;
-                                  }
-                                  checkboxStates[category] = value ?? false;
-                                });
-                              },
-                              controlAffinity: ListTileControlAffinity.leading,
-                            ),
-                            Divider(),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
+      selectedDateData: selectedDateData,
+      onCategoryAdded: () {
+        setState(() {}); // Refresh state after category addition
       },
-    ).then((_) {
-      setState(() {});
-    });
+    );
   }
 
   @override
@@ -564,6 +462,7 @@ class _HomePageState extends State<HomePage> {
                         print('After Subtraction: $selectedDate');
                         _ensureDateExists();
                         updateTotalDaysAndHours();
+                        _pastContract();
                       }
                     });
                   },
@@ -588,6 +487,7 @@ class _HomePageState extends State<HomePage> {
                         selectedDate = selectedDate.add(Duration(days: 1));
                         _ensureDateExists();
                         updateTotalDaysAndHours();
+                        _pastContract();
                       }
                     });
                   },
@@ -603,8 +503,9 @@ class _HomePageState extends State<HomePage> {
               showCategoryBottomSheet: _showCategoryBottomSheet,
               selectTime: _selectTime,
               navigateToJournalScreen: _navigateToJournalScreen,
+              isPastContract: isPastContract,
             ),
-            LockAndSaving(
+            if(isPastContract)LockAndSaving(
               selectedDateData: _getSelectedDateData(),
               onSave: () {
                 String formattedDate = DateFormat('dd-MM-yyyy').format(selectedDate);
@@ -630,7 +531,7 @@ class _HomePageState extends State<HomePage> {
                 });
               },
             ),
-            DisplayBottomDateAndHour(totalHours: totalHours,totalDays : totalDays, leftHours: leftHours, leftDays: leftDays),
+            DisplayBottomDateAndHour(totalHours: totalHours ,totalDays : totalDays, leftHours: leftHours, leftDays: leftDays, leftMinutes: leftMinutes,),
           ]
         ],
       ),

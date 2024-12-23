@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 class DisplayBottomDateAndHour extends StatelessWidget {
-  double totalHours ;
+  int totalHours ;
+  int leftMinutes ;
   int totalDays ;
-  double leftHours;
+  int leftHours;
   double leftDays;
 
-  DisplayBottomDateAndHour({required this.totalHours , required this.totalDays , required this.leftHours , required this.leftDays});
+  DisplayBottomDateAndHour({required this.totalHours , required this.totalDays , required this.leftHours , required this.leftDays , required this.leftMinutes});
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +52,7 @@ class DisplayBottomDateAndHour extends StatelessWidget {
                             padding: EdgeInsets.all(12),
                             child: Center(
                               child: Text(
-                                'H-$leftHours',
+                                leftMinutes < 10 ? 'H- $leftHours.0$leftMinutes' : 'H- $leftHours.$leftMinutes',
                                 style: TextStyle(fontSize: 20, color: Colors.white),
                               ),
                             ),
@@ -114,7 +115,7 @@ class DisplayBottomDateAndHour extends StatelessWidget {
                                 style: TextStyle(fontSize: 16),
                               ),
                               Text(
-                                '$leftHours',
+                                leftMinutes < 10 ? '$leftHours.0$leftMinutes' : '$leftHours.$leftMinutes',
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -155,7 +156,7 @@ class DisplayBottomDateAndHour extends StatelessWidget {
             padding: EdgeInsets.all(12),
             child: Center(
               child: Text(
-                'H- $leftHours',
+                leftMinutes < 10 ? 'H- $leftHours.0$leftMinutes' : 'H- $leftHours.$leftMinutes',
                 style: TextStyle(fontSize: 20, color: Colors.white),
               ),
             ),
